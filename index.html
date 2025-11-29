@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#2563eb">
+    <title>Gestor Pro - Dual Mode</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* --- ESTILOS GERAIS --- */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray-text: #64748b;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--light); 
+            color: var(--dark); 
+            margin: 0; 
+            padding-bottom: calc(100px + var(--safe-bottom));
+            overscroll-behavior-y: none;
+        }
+
+        /* LOGIN */
+        #loginScreen {
+            position: fixed; inset: 0; background: var(--dark); z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-align: center; padding: 20px; transition: opacity 0.3s;
+        }
+        .login-btn {
+            background: var(--primary); color: white; border: none; padding: 15px 30px;
+            border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer;
+            width: 100%; margin-top: 20px; max-width: 300px;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); transition: background 0.2s;
+        }
+        .login-input {
+            width: 100%; max-width: 300px; padding: 15px; 
+            border-radius: 12px; border: 1px solid #334155; 
+            background: #1e293b; color: white;
+            text-align: center; margin-bottom: 10px; font-size: 1rem;
+        }
+
+        /* HEADER */
+        header { 
+            background-color: var(--primary); color: white; padding: 1rem; 
+            padding-top: max(1rem, env(safe-area-inset-top));
+            padding-bottom: 2rem; position: sticky; top: 0; z-index: 100; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); 
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .items-center { align-items: center; }
+        .hidden { display: none !important; }
+
+        /* TOGGLE MODE */
+        .mode-switch {
+            background: rgba(0,0,0,0.2); border-radius: 20px; padding: 4px; display: flex; gap: 5px;
+            margin-top: 10px; justify-content: center; width: fit-content; margin-left: auto; margin-right: auto;
+        }
+        .mode-btn {
+            background: transparent; border: none; color: rgba(255,255,255,0.6); 
+            padding: 6px 12px; border-radius: 16px; font-size: 0.75rem; font-weight: bold; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mode-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        /* CARDS */
+        .card { background: white; padding: 1.2rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid #e2e8f0; }
+        .card-dark { background: #1e293b; color: white; border: none; }
+        
+        main { max-width: 600px; margin: -20px auto 0 auto; position: relative; z-index: 10; padding: 1rem; }
+
+        /* FILTROS */
+        .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+        .date-label { font-size: 0.7rem; font-weight: bold; color: var(--gray-text); text-transform: uppercase; display: block; margin-bottom: 4px; }
+        input[type="date"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; font-size: 0.9rem; -webkit-appearance: none; }
+        
+        /* LISTA */
+        .transaction-item { 
+            display: flex; align-items: center; justify-content: space-between; 
+            background: white; padding: 16px; margin-bottom: 10px; 
+            border-radius: 14px; border-left: 4px solid transparent; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer; user-select: none;
+        }
+        .border-green { border-left-color: var(--success); }
+        .border-red { border-left-color: var(--danger); }
+        .blur-list { filter: blur(4px); opacity: 0.5; pointer-events: none; }
+        
+        .empty-state { text-align: center; color: var(--gray-text); padding: 40px; font-style: italic; font-size: 0.9rem; }
+
+        /* FAB & MODAL */
+        .fab { 
+            position: fixed; bottom: calc(20px + var(--safe-bottom)); right: 25px; 
+            width: 64px; height: 64px; background: var(--dark); color: white; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-size: 2rem; box-shadow: 0 8px 20px rgba(0,0,0,0.25); border: none; z-index: 100; 
+        }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 24px; padding-bottom: max(40px, var(--safe-bottom)); max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .cat-option { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80px; transition: all 0.2s; gap: 5px; }
+        .cat-radio:checked + .cat-option { background: #eff6ff; border-color: var(--primary); color: var(--primary); font-weight: bold; }
+        
+        .amount-input { font-size: 2rem; font-weight: 800; color: var(--dark); border: none; border-bottom: 2px solid #e2e8f0; width: 100%; padding: 10px; text-align: center; background: transparent; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div id="loginScreen">
+        <div style="font-size: 4rem; margin-bottom: 20px;">🛡️</div>
+        <h2 style="margin: 0;">Gestor Pro</h2>
+        <p style="opacity: 0.7; font-size: 0.9rem; margin-bottom: 30px;">Otimizado & Seguro</p>
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <input type="email" id="emailInput" class="login-input" placeholder="E-mail">
+            <input type="password" id="passInput" class="login-input" placeholder="Senha">
+            <button id="btnLogin" class="login-btn">Entrar</button>
+        </div>
+        <p id="loginMsg" style="margin-top:20px; font-size:0.8rem; color:#fca5a5;"></p>
+    </div>
+
+    <!-- APP CONTENT -->
+    <div id="appContent" class="hidden">
+        <header>
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <div id="statusDot" style="width:8px; height:8px; background:#fbbf24; border-radius:50%; margin-right:8px;"></div>
+                    <div>
+                        <h1 style="margin:0; font-size: 1.1rem; font-weight: 800;">Gestor Pro</h1>
+                        <span id="userEmail" style="font-size:0.65rem; opacity:0.8;"></span>
+                    </div>
+                </div>
+                <button id="btnLogout" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 10px; border-radius:8px; font-size:0.75rem;">Sair</button>
+            </div>
+
+            <!-- MODO DE OPERAÇÃO -->
+            <div class="mode-switch">
+                <button class="mode-btn active" id="btnModeSummary" onclick="switchMode('summary')">⚡ Rápido (Soma)</button>
+                <button class="mode-btn" id="btnModeDetailed" onclick="switchMode('detailed')">📝 Detalhado</button>
+            </div>
+
+            <div class="text-center" style="margin-top: 15px;">
+                <p style="font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Saldo do Período</p>
+                <h2 id="totalGlobal" style="font-size: 2.5rem; margin: 5px 0; font-weight: 900;">R$ ...</h2>
+                <div id="loadingIndicator" style="font-size:0.7rem; opacity:0; transition:opacity 0.2s;">Atualizando dados...</div>
+            </div>
+        </header>
+
+        <main>
+            <!-- CONTROLE DE PERÍODO -->
+            <div class="card">
+                <div class="flex justify-between items-center" style="margin-bottom:10px;">
+                    <span class="font-bold text-gray-700" style="font-size:0.9rem;">📅 Período de Análise</span>
+                    <button onclick="setMonthToCurrent()" style="border:1px solid #cbd5e1; background:white; border-radius:15px; padding:4px 12px; font-size:0.75rem; color:var(--primary);">Mês Atual</button>
+                </div>
+                <div class="date-grid">
+                    <div><label class="date-label">Início</label><input type="date" id="dateStart"></div>
+                    <div><label class="date-label">Fim</label><input type="date" id="dateEnd"></div>
+                </div>
+                <button id="btnFetch" style="width:100%; margin-top:12px; background:var(--dark); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">🔎 Buscar Dados</button>
+            </div>
+
+            <!-- RESULTADOS -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem;">
+                <div class="card text-center" style="margin:0; padding: 1rem;">
+                    <p style="font-size:0.7rem; color:var(--gray-text); font-weight: bold;">ENTRADAS</p>
+                    <p id="sumIncome" style="font-size:1.1rem; font-weight:bold; color:var(--success);">...</p>
+                </div>
+                <div class="card text-center" style="margin:0; padding: 1rem;">
+                    <p style="font-size:0.7rem; color:var(--gray-text); font-weight: bold;">SAÍDAS</p>
+                    <p id="sumExpense" style="font-size:1.1rem; font-weight:bold; color:var(--danger);">...</p>
+                </div>
+            </div>
+
+            <!-- CARD LUCRO -->
+            <div class="card card-dark">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p style="font-size:0.75rem; opacity:0.7; text-transform: uppercase;">Resultado Líquido</p>
+                        <h3 id="resLiquid" style="font-size:1.8rem; margin:5px 0;">...</h3>
+                    </div>
+                    <span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:6px; font-size:0.7rem; border: 1px solid rgba(255,255,255,0.2);">DIVISÃO /3</span>
+                </div>
+                <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px; margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>🍕 Parte Individual:</span>
+                    <span id="resSplit" style="font-weight:bold; color:#60a5fa; font-size:1.3rem;">...</span>
+                </div>
+            </div>
+
+            <!-- ÁREA DE LISTA (SÓ APARECE NO MODO DETALHADO) -->
+            <div id="detailedSection" class="hidden">
+                <h3 class="font-bold text-gray-700" style="margin-bottom:10px; font-size:1rem;">📝 Extrato Detalhado</h3>
+                <div id="transactionList"></div>
+            </div>
+            
+            <div id="summaryMessage" class="empty-state">
+                <span style="font-size:2rem;">⚡</span><br>
+                Modo Rápido Ativo.<br>
+                A lista detalhada está oculta para economizar dados.<br>
+                Mude para "Detalhado" para ver itens individuais.
+            </div>
+
+        </main>
+
+        <!-- FAB ADD -->
+        <button id="btnOpenModal" class="fab">＋</button>
+
+        <!-- MODAL -->
+        <div id="transactionModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-bold text-xl">Novo Lançamento</h2>
+                    <button id="btnCloseModal" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem;">✕</button>
+                </div>
+                <form id="addForm">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                        <label style="cursor:pointer;">
+                            <input type="radio" name="type" value="income" class="hidden cat-radio">
+                            <div class="cat-option" style="height:60px; flex-direction:row; gap:10px;">
+                                <span>⬆️</span><span style="color:var(--success); font-weight:bold;">Entrada</span>
+                            </div>
+                        </label>
+                        <label style="cursor:pointer;">
+                            <input type="radio" name="type" value="expense" class="hidden cat-radio" checked>
+                            <div class="cat-option" style="height:60px; flex-direction:row; gap:10px;">
+                                <span>⬇️</span><span style="color:var(--danger); font-weight:bold;">Saída</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <label style="font-size:0.75rem; font-weight:bold; color:var(--gray-text); display:block; text-align:center; margin-bottom: 5px;">VALOR (R$)</label>
+                        <input type="tel" id="amount" class="amount-input" placeholder="0,00" required inputmode="numeric">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size:0.75rem; font-weight:bold; color:var(--gray-text); display:block;">DATA</label>
+                        <input type="date" id="dateInput" required style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; width:100%;">
+                    </div>
+
+                    <div style="margin-bottom:20px;">
+                        <label style="font-size:0.75rem; font-weight:bold; color:var(--gray-text); display:block;">CATEGORIA</label>
+                        <div id="categoriesGrid" class="cat-grid"></div>
+                    </div>
+
+                    <div style="margin-bottom:20px;">
+                        <label style="font-size:0.75rem; font-weight:bold; color:var(--gray-text); display:block;">DESCRIÇÃO</label>
+                        <input type="text" id="descInput" placeholder="Opcional..." style="width:100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 5px;">
+                    </div>
+
+                    <button type="submit" id="btnSubmit" style="width:100%; background:var(--primary); color:white; padding:18px; border:none; border-radius:16px; font-weight:bold; font-size:1.1rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">SALVAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE MODULE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, push, remove, get, query, orderByChild, startAt, endAt, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        // CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyAg9hwS3kOcAxBC_IlFgJF97G14ToAJ3Ek",
+            authDomain: "financeiroproengtec.firebaseapp.com",
+            projectId: "financeiroproengtec",
+            storageBucket: "financeiroproengtec.firebasestorage.app",
+            messagingSenderId: "848391283452",
+            appId: "1:848391283452:web:e713d9854d9a047e2bed79"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        // STATE
+        let currentMode = 'summary'; // 'summary' ou 'detailed'
+        const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        // CATEGORIES
+        const expenseCategories = [
+            { label: 'Gasolina', icon: '⛽' }, { label: 'Almoço', icon: '🍽️' }, { label: 'Material', icon: '🧱' },
+            { label: 'Equipe', icon: '👷' }, { label: 'Ferramenta', icon: '🔧' }, { label: 'Serviço', icon: '📋' },
+            { label: 'Banco', icon: '🏦' }, { label: 'Lazer', icon: '🍺' }, { label: 'Outro', icon: '📦' }
+        ];
+        const incomeCategories = [
+            { label: 'Obra/Solar', icon: '☀️' }, { label: 'Elétrica', icon: '⚡' }, { label: 'Venda', icon: '💰' },
+            { label: 'Serviço', icon: '🛠️' }, { label: 'Outro', icon: '📦' }
+        ];
+
+        // --- INIT ---
+        window.switchMode = (mode) => {
+            currentMode = mode;
+            document.getElementById('btnModeSummary').classList.toggle('active', mode === 'summary');
+            document.getElementById('btnModeDetailed').classList.toggle('active', mode === 'detailed');
+            
+            const detailSec = document.getElementById('detailedSection');
+            const summaryMsg = document.getElementById('summaryMessage');
+
+            if(mode === 'detailed') {
+                detailSec.classList.remove('hidden');
+                summaryMsg.classList.add('hidden');
+            } else {
+                detailSec.classList.add('hidden');
+                summaryMsg.classList.remove('hidden');
+            }
+            // Trigger fetch automatically on switch
+            fetchData();
+        };
+
+        window.setMonthToCurrent = () => {
+            const date = new Date();
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const lastDay = new Date(y, date.getMonth() + 1, 0).getDate();
+            
+            document.getElementById('dateStart').value = `${y}-${m}-01`;
+            document.getElementById('dateEnd').value = `${y}-${m}-${lastDay}`;
+            fetchData();
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup Inputs
+            const amt = document.getElementById('amount');
+            amt.addEventListener('input', (e) => {
+                let v = e.target.value.replace(/\D/g,"");
+                v = (parseInt(v || "0")/100).toFixed(2) + "";
+                e.target.value = v.replace(".",",");
+            });
+
+            document.querySelectorAll('input[name="type"]').forEach(r => {
+                r.addEventListener('change', (e) => renderCategories(e.target.value));
+            });
+
+            // Listeners
+            document.getElementById('btnLogin').onclick = doLogin;
+            document.getElementById('btnLogout').onclick = () => signOut(auth);
+            document.getElementById('btnFetch').onclick = fetchData;
+            
+            // Modal
+            const modal = document.getElementById('transactionModal');
+            document.getElementById('btnOpenModal').onclick = () => {
+                modal.classList.remove('hidden');
+                document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
+                document.getElementById('amount').value = '';
+                document.getElementById('descInput').value = '';
+                document.getElementById('amount').focus();
+            };
+            document.getElementById('btnCloseModal').onclick = () => modal.classList.add('hidden');
+            document.getElementById('addForm').onsubmit = saveTransaction;
+
+            // Defaults
+            renderCategories('expense');
+            window.setMonthToCurrent();
+        });
+
+        // --- AUTH ---
+        onAuthStateChanged(auth, (user) => {
+            if(user) {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appContent').classList.remove('hidden');
+                document.getElementById('userEmail').innerText = user.email;
+                document.getElementById('statusDot').style.background = "#34d399";
+                fetchData();
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('appContent').classList.add('hidden');
+            }
+        });
+
+        function doLogin() {
+            const e = document.getElementById('emailInput').value;
+            const p = document.getElementById('passInput').value;
+            const btn = document.getElementById('btnLogin');
+            btn.innerText = "...";
+            signInWithEmailAndPassword(auth, e, p)
+                .catch(() => { btn.innerText = "Erro"; setTimeout(()=>btn.innerText="Entrar", 2000); });
+        }
+
+        // --- CORE LOGIC: FETCHING ---
+        async function fetchData() {
+            const start = document.getElementById('dateStart').value;
+            const end = document.getElementById('dateEnd').value;
+            
+            if(!start || !end) return alert("Selecione as datas.");
+
+            const loader = document.getElementById('loadingIndicator');
+            loader.style.opacity = 1;
+
+            let totalInc = 0;
+            let totalExp = 0;
+            const listEl = document.getElementById('transactionList');
+            listEl.innerHTML = '';
+
+            try {
+                if (currentMode === 'summary') {
+                    // MODO RÁPIDO: Consulta 'resumo_diario'
+                    // Como as chaves são YYYY-MM-DD, podemos usar startAt/endAt lexicográfico
+                    const qRef = query(ref(db, 'resumo_diario'), orderByChild('date'), startAt(start), endAt(end));
+                    const snap = await get(qRef);
+                    
+                    if(snap.exists()) {
+                        snap.forEach(child => {
+                            const day = child.val();
+                            totalInc += (day.income || 0);
+                            totalExp += (day.expense || 0);
+                        });
+                    }
+
+                } else {
+                    // MODO DETALHADO: Consulta 'transacoes'
+                    // Deve haver um index no Firebase Rules: "transacoes": { ".indexOn": "date" }
+                    const qRef = query(ref(db, 'transacoes'), orderByChild('date'), startAt(start), endAt(end));
+                    const snap = await get(qRef);
+
+                    const items = [];
+                    if(snap.exists()) {
+                        snap.forEach(child => {
+                            items.push({ id: child.key, ...child.val() });
+                        });
+                    }
+
+                    // Ordena localmente (Mais recente primeiro)
+                    items.sort((a,b) => b.date.localeCompare(a.date));
+
+                    items.forEach(t => {
+                        // Soma
+                        if(t.type === 'income') totalInc += t.amount; else totalExp += t.amount;
+                        
+                        // Renderiza Item
+                        const dateParts = t.date.split('-');
+                        const div = document.createElement('div');
+                        div.className = `transaction-item ${t.type==='income'?'border-green':'border-red'}`;
+                        div.innerHTML = `
+                            <div class="flex items-center" style="gap:10px;">
+                                <div style="font-size:1.4rem;">${t.icon}</div>
+                                <div>
+                                    <div style="font-weight:bold; font-size:0.9rem;">${t.category}</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">${dateParts[2]}/${dateParts[1]} • ${t.desc || ''}</div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div style="font-weight:bold; color:${t.type==='income'?'var(--success)':'var(--danger)'}">
+                                    ${t.type==='income'?'+':'-'} ${t.amount.toFixed(2)}
+                                </div>
+                                <button onclick="window.deleteItem('${t.id}', '${t.date}', '${t.type}', ${t.amount})" style="background:none; border:none; color:#ef4444; font-size:0.7rem; margin-top:5px;">Excluir</button>
+                            </div>
+                        `;
+                        listEl.appendChild(div);
+                    });
+                    
+                    if(items.length === 0) listEl.innerHTML = '<div class="text-center p-4 text-gray-500">Sem dados neste período.</div>';
+                }
+
+                // UI UPDATE (COMMOM)
+                const liquid = totalInc - totalExp;
+                document.getElementById('totalGlobal').innerText = formatter.format(liquid);
+                document.getElementById('sumIncome').innerText = formatter.format(totalInc);
+                document.getElementById('sumExpense').innerText = formatter.format(totalExp);
+                document.getElementById('resLiquid').innerText = formatter.format(liquid);
+                document.getElementById('resSplit').innerText = formatter.format(liquid / 3);
+
+                // Cores
+                document.getElementById('totalGlobal').style.color = liquid >= 0 ? 'white' : '#fca5a5';
+                document.getElementById('resLiquid').style.color = liquid >= 0 ? '#4ade80' : '#f87171';
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao buscar: " + err.message);
+            } finally {
+                loader.style.opacity = 0;
+            }
+        }
+
+        // --- CORE LOGIC: WRITING (DUAL WRITE) ---
+        function saveTransaction(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true; btn.innerText = "Salvando...";
+
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const raw = document.getElementById('amount').value.replace(/\./g,'').replace(',','.');
+            const amount = parseFloat(raw);
+            const date = document.getElementById('dateInput').value;
+            const desc = document.getElementById('descInput').value;
+            
+            // Categoria Info
+            const catLabel = document.querySelector('input[name="category"]:checked')?.value || 'Outro';
+            const list = type === 'income' ? incomeCategories : expenseCategories;
+            const icon = list.find(c => c.label === catLabel)?.icon || '📦';
+
+            if(!amount || !date) { btn.disabled = false; return alert("Preencha valores."); }
+
+            // 1. Salva a transação detalhada
+            const newRef = push(ref(db, 'transacoes'));
+            const transPromise = newRef.set({
+                type, amount, date, category: catLabel, desc, icon
+            });
+
+            // 2. Atualiza o Resumo Diário (Atomicamente)
+            const summaryRef = ref(db, `resumo_diario/${date}`);
+            const summaryPromise = runTransaction(summaryRef, (currentData) => {
+                if (currentData === null) {
+                    return { date: date, income: type==='income'?amount:0, expense: type==='expense'?amount:0 };
+                } else {
+                    if(type === 'income') currentData.income = (currentData.income || 0) + amount;
+                    else currentData.expense = (currentData.expense || 0) + amount;
+                    return currentData;
+                }
+            });
+
+            Promise.all([transPromise, summaryPromise])
+                .then(() => {
+                    document.getElementById('transactionModal').classList.add('hidden');
+                    e.target.reset();
+                    fetchData(); // Refresh na tela
+                })
+                .catch(err => alert("Erro: " + err))
+                .finally(() => { btn.disabled = false; btn.innerText = "SALVAR"; });
+        }
+
+        // --- CORE LOGIC: DELETING (DUAL WRITE) ---
+        window.deleteItem = (id, date, type, amount) => {
+            if(!confirm("Apagar este item?")) return;
+
+            // 1. Remove Detalhado
+            const p1 = remove(ref(db, `transacoes/${id}`));
+
+            // 2. Atualiza Resumo (Reverso)
+            const summaryRef = ref(db, `resumo_diario/${date}`);
+            const p2 = runTransaction(summaryRef, (currentData) => {
+                if(!currentData) return null; // Já não existe
+                
+                if(type === 'income') currentData.income = Math.max(0, (currentData.income || 0) - amount);
+                else currentData.expense = Math.max(0, (currentData.expense || 0) - amount);
+                
+                return currentData;
+            });
+
+            Promise.all([p1, p2]).then(() => fetchData());
+        };
+
+        // --- HELPERS ---
+        function renderCategories(type) {
+            const grid = document.getElementById('categoriesGrid');
+            const list = type === 'income' ? incomeCategories : expenseCategories;
+            grid.innerHTML = list.map((c,i) => `
+                <label style="cursor:pointer">
+                    <input type="radio" name="category" value="${c.label}" class="hidden cat-radio" ${i===0?'checked':''}>
+                    <div class="cat-option">
+                        <div style="font-size:1.5rem">${c.icon}</div>
+                        <span style="font-size:0.7rem">${c.label}</span>
+                    </div>
+                </label>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
+
