@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#2563eb">
-    <title>Gestor Pro - Rápido</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Gestor Pro - Engenharia</title>
 
     <style>
-        /* --- ESTILOS GERAIS --- */
         :root {
             --primary: #2563eb;
             --primary-dark: #1e40af;
@@ -17,119 +15,222 @@
             --dark: #0f172a;
             --light: #f8fafc;
             --gray-text: #64748b;
+            --border: #e2e8f0;
             --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --safe-top: env(safe-area-inset-top, 20px);
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         
+        /* Reset & Base */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--light); 
-            color: var(--dark); 
-            margin: 0; 
+            background-color: var(--light); color: var(--dark); margin: 0; 
             padding-bottom: calc(100px + var(--safe-bottom));
-            overscroll-behavior-y: none;
+            overscroll-behavior-y: none; user-select: none;
         }
 
-        /* LOGIN */
-        #loginScreen {
-            position: fixed; inset: 0; background: var(--dark); z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: white; text-align: center; padding: 20px; transition: opacity 0.3s;
-        }
-        .login-btn {
-            background: var(--primary); color: white; border: none; padding: 15px 30px;
-            border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer;
-            width: 100%; margin-top: 20px; max-width: 300px;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); transition: background 0.2s;
-        }
-        .login-input {
-            width: 100%; max-width: 300px; padding: 15px; 
-            border-radius: 12px; border: 1px solid #334155; 
-            background: #1e293b; color: white;
-            text-align: center; margin-bottom: 10px; font-size: 1rem;
-        }
-
-        /* HEADER */
-        header { 
-            background-color: var(--primary); color: white; padding: 1rem; 
-            padding-top: max(1rem, env(safe-area-inset-top));
-            padding-bottom: 2rem; position: sticky; top: 0; z-index: 100; 
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); 
-            border-radius: 0 0 20px 20px;
-        }
+        /* Tipografia e Utilitários */
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.8rem; }
+        .text-xs { font-size: 0.7rem; }
+        .text-xl { font-size: 1.2rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .font-bold { font-weight: bold; }
+        .opacity-70 { opacity: 0.7; }
+        .text-gray { color: var(--gray-text); }
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-primary { color: var(--primary); }
+        .w-full { width: 100%; }
+        .hidden { display: none !important; }
         
         .flex { display: flex; }
+        .flex-col { flex-direction: column; }
         .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
         .items-center { align-items: center; }
-        .hidden { display: none !important; }
+        .gap-2 { gap: 8px; }
+        .gap-4 { gap: 16px; }
+        .mb-2 { margin-bottom: 8px; }
+        .mb-4 { margin-bottom: 16px; }
+        .mt-2 { margin-top: 8px; }
+        .mt-4 { margin-top: 16px; }
 
-        /* TOGGLE MODE */
+        /* Forms */
+        input, select, textarea { font-size: 16px !important; } /* IOS Zoom fix */
+        input:focus { border-color: var(--primary) !important; transition: 0.3s; }
+        
+        .input-std {
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 12px;
+            background: #fff; font-size: 1rem; color: var(--dark);
+        }
+        .input-date {
+            min-height: 45px; -webkit-appearance: none; appearance: none;
+            color-scheme: light;
+        }
+
+        /* Components */
+        .btn-primary {
+            background: var(--primary); color: white; border: none; padding: 15px;
+            border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); transition: background 0.2s, transform 0.1s;
+        }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .card { 
+            background: white; padding: 1.2rem; border-radius: 16px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 1rem; 
+            border: 1px solid var(--border); 
+        }
+        .card-dark { background: #1e293b; color: white; border: none; }
+
+        /* Login Screen */
+        #loginScreen {
+            position: fixed; inset: 0; background: var(--dark); z-index: 2000;
+            padding: 20px; transition: opacity 0.3s;
+        }
+        .login-input {
+            width: 100%; max-width: 300px; padding: 15px; border-radius: 12px; 
+            border: 1px solid #334155; background: #1e293b; color: white;
+            text-align: center; margin-bottom: 10px;
+        }
+
+        /* Header */
+        header { 
+            background-color: var(--primary); color: white; padding: 1rem; 
+            padding-top: max(1rem, var(--safe-top)); padding-bottom: 2rem; 
+            position: sticky; top: 0; z-index: 100; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); border-radius: 0 0 20px 20px;
+        }
+
+        /* Mode Switcher */
         .mode-switch {
-            background: rgba(0,0,0,0.2); border-radius: 20px; padding: 4px; display: flex; gap: 5px;
-            margin-top: 10px; justify-content: center; width: fit-content; margin-left: auto; margin-right: auto;
+            background: rgba(0,0,0,0.2); border-radius: 20px; padding: 4px; 
+            margin: 10px auto; width: fit-content;
         }
         .mode-btn {
             background: transparent; border: none; color: rgba(255,255,255,0.6); 
-            padding: 6px 12px; border-radius: 16px; font-size: 0.75rem; font-weight: bold; cursor: pointer;
-            transition: all 0.2s;
+            padding: 6px 12px; border-radius: 16px; font-size: 0.75rem; 
+            font-weight: bold; cursor: pointer; transition: all 0.2s;
         }
         .mode-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        /* CARDS */
-        .card { background: white; padding: 1.2rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid #e2e8f0; }
-        .card-dark { background: #1e293b; color: white; border: none; }
-        
+        /* Main Content */
         main { max-width: 600px; margin: -20px auto 0 auto; position: relative; z-index: 10; padding: 1rem; }
 
-        /* FILTROS */
-        .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
-        .date-label { font-size: 0.7rem; font-weight: bold; color: var(--gray-text); text-transform: uppercase; display: block; margin-bottom: 4px; }
-        input[type="date"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; font-size: 0.9rem; -webkit-appearance: none; }
+        .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        /* LISTA */
+        /* Transaction List */
         .transaction-item { 
-            display: flex; align-items: center; justify-content: space-between; 
-            background: white; padding: 16px; margin-bottom: 10px; 
+            display: flex; align-items: center; background: white; padding: 16px; margin-bottom: 10px; 
             border-radius: 14px; border-left: 4px solid transparent; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer; user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer; 
+            position: relative;
+            /* Performance Optimization */
+            content-visibility: auto; contain-intrinsic-size: 80px;
         }
-        .border-green { border-left-color: var(--success); }
-        .border-red { border-left-color: var(--danger); }
+        .transaction-item:active { background-color: #f1f5f9; }
+        .transaction-item.selected { background-color: #eff6ff; border: 1px solid var(--primary); }
+        .border-l-success { border-left-color: var(--success); }
+        .border-l-danger { border-left-color: var(--danger); }
         
-        .empty-state { text-align: center; color: var(--gray-text); padding: 40px; font-style: italic; font-size: 0.9rem; }
+        .select-indicator {
+            width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1;
+            margin-right: 15px; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: all 0.2s;
+        }
+        .transaction-item.selected .select-indicator { background: var(--primary); border-color: var(--primary); }
+        .transaction-item.selected .select-indicator::after { content: '✓'; color: white; font-size: 12px; font-weight: bold; }
 
-        /* FAB & MODAL */
+        .btn-delete-hitbox {
+            background: transparent; border: none; padding: 10px 15px; margin: -10px -10px -10px 0;
+            cursor: pointer; opacity: 0.4; font-size: 1.2rem;
+        }
+        .btn-delete-hitbox:active { opacity: 1; color: var(--danger); transform: scale(1.1); }
+
+        /* FAB & Modals */
         .fab { 
             position: fixed; bottom: calc(20px + var(--safe-bottom)); right: 25px; 
             width: 64px; height: 64px; background: var(--dark); color: white; 
             border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-size: 2rem; box-shadow: 0 8px 20px rgba(0,0,0,0.25); border: none; z-index: 100; 
+            font-size: 2rem; box-shadow: 0 8px 20px rgba(0,0,0,0.25); border: none; z-index: 90; cursor: pointer;
+            transition: transform 0.2s;
         }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 24px; padding-bottom: max(40px, var(--safe-bottom)); max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        .modal-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; 
+            display: flex; align-items: flex-end; justify-content: center; 
+            backdrop-filter: blur(4px); 
+        }
+        .modal-content { 
+            background: white; width: 100%; max-width: 600px; 
+            border-radius: 24px 24px 0 0; padding: 24px; 
+            padding-bottom: max(40px, var(--safe-bottom)); 
+            max-height: 85vh; overflow-y: auto; 
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-        .cat-option { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80px; transition: all 0.2s; gap: 5px; }
-        .cat-radio:checked + .cat-option { background: #eff6ff; border-color: var(--primary); color: var(--primary); font-weight: bold; }
+        .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .cat-option { 
+            border: 1px solid var(--border); border-radius: 12px; padding: 10px; 
+            text-align: center; cursor: pointer; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; height: 80px; 
+            transition: all 0.2s; gap: 5px; 
+        }
+        .cat-radio:checked + .cat-option { 
+            background: #eff6ff; border-color: var(--primary); 
+            color: var(--primary); font-weight: bold; 
+        }
         
-        .amount-input { font-size: 2rem; font-weight: 800; color: var(--dark); border: none; border-bottom: 2px solid #e2e8f0; width: 100%; padding: 10px; text-align: center; background: transparent; }
+        .amount-input { 
+            /* AUMENTADO DE 2.5rem PARA 3.5rem */
+            font-size: 3.5rem; 
+            font-weight: 800; color: var(--dark); border: none; 
+            border-bottom: 2px solid var(--border); width: 100%; padding: 10px; 
+            text-align: center; background: transparent; border-radius: 0; 
+        }
+        
+        /* Toast & Selection Bar */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
+            text-align: center; border-radius: 50px; padding: 16px; position: fixed;
+            z-index: 3000; left: 50%; bottom: calc(30px + var(--safe-bottom));
+            transform: translateX(-50%); font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: calc(50px + var(--safe-bottom)); }
+
+        #selectionBar {
+            position: fixed; bottom: calc(20px + var(--safe-bottom)); left: 20px; right: 90px;
+            background: var(--primary); color: white; padding: 15px; border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); z-index: 95;
+            transform: translateY(150%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #selectionBar.visible { transform: translateY(0); }
     </style>
 </head>
 <body>
+    <!-- Toast -->
+    <div id="toast"></div>
 
-    <div id="loginScreen">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="flex flex-col items-center justify-center">
         <div style="font-size: 4rem; margin-bottom: 20px;">🛡️</div>
-        <h2 style="margin: 0;">Gestor Pro</h2>
-        <p style="opacity: 0.7; font-size: 0.9rem; margin-bottom: 30px;">Otimizado & Seguro</p>
-        <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <h2 style="margin: 0;" class="text-2xl text-center text-white font-bold">Gestor Pro</h2>
+        <p class="opacity-70 text-sm mb-4 text-white">Engenharia Financeira</p>
+        
+        <div class="flex flex-col items-center w-full gap-2">
             <input type="email" id="emailInput" class="login-input" placeholder="E-mail">
             <input type="password" id="passInput" class="login-input" placeholder="Senha">
-            <button id="btnLogin" class="login-btn">Entrar</button>
+            <button id="btnLogin" class="btn-primary" style="width: 100%; max-width: 300px;">Entrar</button>
         </div>
-        <p id="loginMsg" style="margin-top:20px; font-size:0.8rem; color:#fca5a5;"></p>
+        <p id="loginMsg" class="mt-4 text-sm text-danger"></p>
     </div>
 
+    <!-- App Content -->
     <div id="appContent" class="hidden">
         <header>
             <div class="flex justify-between items-center">
@@ -137,134 +238,171 @@
                     <div id="statusDot" style="width:8px; height:8px; background:#fbbf24; border-radius:50%; margin-right:8px;"></div>
                     <div>
                         <h1 style="margin:0; font-size: 1.1rem; font-weight: 800;">Gestor Pro</h1>
-                        <span id="userEmail" style="font-size:0.65rem; opacity:0.8;"></span>
+                        <span id="userEmail" class="text-xs opacity-70"></span>
                     </div>
                 </div>
-                <button id="btnLogout" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 10px; border-radius:8px; font-size:0.75rem;">Sair</button>
+                <button id="btnLogout" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 10px; border-radius:8px; font-size:0.75rem; cursor:pointer;">Sair</button>
             </div>
 
-            <div class="mode-switch">
-                <button class="mode-btn active" id="btnModeSummary" onclick="switchMode('summary')">⚡ Rápido (Soma)</button>
-                <button class="mode-btn" id="btnModeDetailed" onclick="switchMode('detailed')">📝 Detalhado</button>
+            <div class="mode-switch flex gap-2">
+                <button class="mode-btn" id="btnModeSummary" onclick="appLogic.switchMode('summary')">⚡ Rápido</button>
+                <button class="mode-btn active" id="btnModeDetailed" onclick="appLogic.switchMode('detailed')">📝 Detalhado</button>
             </div>
 
-            <div class="text-center" style="margin-top: 15px;">
-                <p style="font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Saldo do Período</p>
-                <h2 id="totalGlobal" style="font-size: 2.5rem; margin: 5px 0; font-weight: 900;">R$ ...</h2>
-                <div id="loadingIndicator" style="font-size:0.7rem; opacity:0; transition:opacity 0.2s;">Atualizando dados...</div>
+            <div class="text-center mt-4">
+                <p class="text-xs opacity-70" style="text-transform: uppercase; letter-spacing: 1px;">Saldo do Período</p>
+                <div style="min-height: 60px;" class="flex flex-col items-center justify-center">
+                     <h2 id="totalGlobal" style="font-size: 2.5rem; margin: 0; font-weight: 900;">R$ ...</h2>
+                     <p id="errorMsgDisplay" class="text-danger text-sm hidden mt-2"></p>
+                </div>
+                <div id="loadingIndicator" class="text-xs" style="opacity:0; transition:opacity 0.2s;">Sincronizando...</div>
             </div>
         </header>
 
         <main>
+            <!-- Filtro de Datas -->
             <div class="card">
-                <div class="flex justify-between items-center" style="margin-bottom:10px;">
-                    <span class="font-bold text-gray-700" style="font-size:0.9rem;">📅 Período de Análise</span>
-                    <button onclick="setMonthToCurrent()" style="border:1px solid #cbd5e1; background:white; border-radius:15px; padding:4px 12px; font-size:0.75rem; color:var(--primary);">Mês Atual</button>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-gray text-sm">📅 Período Personalizado</span>
+                    <button onclick="appLogic.setLast30Days()" style="border:1px solid var(--border); background:white; border-radius:15px; padding:4px 12px; font-size:0.75rem; color:var(--primary);">Últimos 30 Dias</button>
                 </div>
                 <div class="date-grid">
-                    <div><label class="date-label">Início</label><input type="date" id="dateStart"></div>
-                    <div><label class="date-label">Fim</label><input type="date" id="dateEnd"></div>
+                    <div><label class="text-xs font-bold text-gray block mb-2">INÍCIO</label><input type="date" id="dateStart" class="input-std input-date"></div>
+                    <div><label class="text-xs font-bold text-gray block mb-2">FIM</label><input type="date" id="dateEnd" class="input-std input-date"></div>
                 </div>
-                <button id="btnFetch" style="width:100%; margin-top:12px; background:var(--dark); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">🔎 Buscar Dados</button>
+                <button id="btnFetch" class="btn-primary w-full mt-4" style="background: var(--dark);">🔎 Filtrar</button>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem;">
+            <!-- Resumo Entradas/Saidas -->
+            <div class="date-grid mb-4">
                 <div class="card text-center" style="margin:0; padding: 1rem;">
-                    <p style="font-size:0.7rem; color:var(--gray-text); font-weight: bold;">ENTRADAS</p>
-                    <p id="sumIncome" style="font-size:1.1rem; font-weight:bold; color:var(--success);">...</p>
+                    <p class="text-xs font-bold text-gray">ENTRADAS</p>
+                    <p id="sumIncome" class="text-xl font-bold text-success">...</p>
                 </div>
                 <div class="card text-center" style="margin:0; padding: 1rem;">
-                    <p style="font-size:0.7rem; color:var(--gray-text); font-weight: bold;">SAÍDAS</p>
-                    <p id="sumExpense" style="font-size:1.1rem; font-weight:bold; color:var(--danger);">...</p>
+                    <p class="text-xs font-bold text-gray">SAÍDAS</p>
+                    <p id="sumExpense" class="text-xl font-bold text-danger">...</p>
                 </div>
             </div>
 
+            <!-- Card Líquido -->
             <div class="card card-dark">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p style="font-size:0.75rem; opacity:0.7; text-transform: uppercase;">Resultado Líquido</p>
+                        <p class="text-xs opacity-70" style="text-transform: uppercase;">Resultado Líquido</p>
                         <h3 id="resLiquid" style="font-size:1.8rem; margin:5px 0;">...</h3>
                     </div>
                     <span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:6px; font-size:0.7rem; border: 1px solid rgba(255,255,255,0.2);">DIVISÃO /3</span>
                 </div>
-                <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px; margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                <div class="flex justify-between items-center mt-4" style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px;">
                     <span>🍕 Parte Individual:</span>
                     <span id="resSplit" style="font-weight:bold; color:#60a5fa; font-size:1.3rem;">...</span>
                 </div>
             </div>
 
-            <div id="detailedSection" class="hidden">
-                <h3 class="font-bold text-gray-700" style="margin-bottom:10px; font-size:1rem;">📝 Extrato Detalhado</h3>
+            <!-- Lista Detalhada -->
+            <div id="detailedSection">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-gray text-sm">📝 Extrato Detalhado</h3>
+                    <span class="text-xs text-gray">Toque para selecionar</span>
+                </div>
                 <div id="transactionList"></div>
+                <div id="scrollLoader" class="text-center p-2 hidden text-sm text-gray">Carregando mais itens...</div>
             </div>
             
-            <div id="summaryMessage" class="empty-state">
-                <span style="font-size:2rem;">⚡</span><br>
-                Modo Rápido Ativo.<br>
-                Toque em "Detalhado" para ver a lista.
+            <!-- Mensagem Modo Rápido -->
+            <div id="summaryMessage" class="hidden text-center text-gray p-8">
+                <span class="text-2xl">⚡</span><br>
+                <strong>Modo Rápido Ativo</strong><br>
+                <span class="text-sm opacity-70">Exibindo apenas os totais para otimizar desempenho.</span><br>
+                <span class="text-xs text-primary mt-2 block cursor-pointer underline" onclick="appLogic.forceShowList()">Forçar exibição da lista</span>
             </div>
-
         </main>
 
-        <button id="btnOpenModal" class="fab">＋</button>
+        <!-- Barra de Seleção (Soma) -->
+        <div id="selectionBar">
+            <div>
+                <div class="text-xs opacity-70">Soma Selecionada</div>
+                <div id="selectedTotalDisplay" class="font-bold text-xl">R$ 0,00</div>
+            </div>
+            <button onclick="appLogic.clearSelection()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:8px 12px; border-radius:8px; cursor:pointer;">Limpar</button>
+        </div>
 
+        <button id="btnOpenModal" class="fab" aria-label="Adicionar Transação">＋</button>
+
+        <!-- Modal Adicionar -->
         <div id="transactionModal" class="modal-overlay hidden">
             <div class="modal-content">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center mb-4">
                     <h2 class="font-bold text-xl">Novo Lançamento</h2>
-                    <button id="btnCloseModal" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem;">✕</button>
+                    <button id="btnCloseModal" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem; cursor:pointer;" aria-label="Fechar">✕</button>
                 </div>
                 <form id="addForm">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                    <div class="date-grid mb-4">
                         <label style="cursor:pointer;">
                             <input type="radio" name="type" value="income" class="hidden cat-radio">
                             <div class="cat-option" style="height:60px; flex-direction:row; gap:10px;">
-                                <span>⬆️</span><span style="color:var(--success); font-weight:bold;">Entrada</span>
+                                <span>⬆️</span><span class="text-success font-bold">Entrada</span>
                             </div>
                         </label>
                         <label style="cursor:pointer;">
                             <input type="radio" name="type" value="expense" class="hidden cat-radio" checked>
                             <div class="cat-option" style="height:60px; flex-direction:row; gap:10px;">
-                                <span>⬇️</span><span style="color:var(--danger); font-weight:bold;">Saída</span>
+                                <span>⬇️</span><span class="text-danger font-bold">Saída</span>
                             </div>
                         </label>
                     </div>
 
-                    <div style="margin-bottom: 25px;">
-                        <label style="font-size:0.75rem; font-weight:bold; color:var(--gray-text); display:block; text-align:center; margin-bottom: 5px;">VALOR (R$)</label>
-                        <input type="tel" id="amount" class="amount-input" placeholder="0,00" required inputmode="numeric">
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-gray block text-center mb-2">VALOR (R$)</label>
+                        <input type="tel" id="amount" class="amount-input" placeholder="0,00" required inputmode="numeric" onclick="this.select()">
                     </div>
 
-                    <div style="margin-bottom: 20px;">
-                        <label style="font-size:0.75rem; font-weight:bold; color:var(--gray-text); display:block;">DATA</label>
-                        <input type="date" id="dateInput" required style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; width:100%;">
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-gray block mb-2">DATA</label>
+                        <input type="date" id="dateInput" required class="input-std input-date">
                     </div>
 
-                    <div style="margin-bottom:20px;">
-                        <label style="font-size:0.75rem; font-weight:bold; color:var(--gray-text); display:block;">CATEGORIA</label>
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-gray block mb-2">CATEGORIA</label>
                         <div id="categoriesGrid" class="cat-grid"></div>
                     </div>
 
-                    <div style="margin-bottom:20px;">
-                        <label style="font-size:0.75rem; font-weight:bold; color:var(--gray-text); display:block;">DESCRIÇÃO</label>
-                        <input type="text" id="descInput" placeholder="Opcional..." style="width:100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 5px;">
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-gray block mb-2">DESCRIÇÃO</label>
+                        <input type="text" id="descInput" placeholder="Opcional..." class="input-std">
                     </div>
 
-                    <button type="submit" id="btnSubmit" style="width:100%; background:var(--primary); color:white; padding:18px; border:none; border-radius:16px; font-weight:bold; font-size:1.1rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">SALVAR</button>
+                    <button type="submit" id="btnSubmit" class="btn-primary w-full">SALVAR</button>
                 </form>
+            </div>
+        </div>
+
+        <!-- Modal Confirmação -->
+        <div id="confirmModal" class="modal-overlay hidden items-center">
+            <div style="background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+                <div class="text-2xl mb-2">🗑️</div>
+                <h3 class="text-xl font-bold mb-2">Apagar item?</h3>
+                <p class="text-gray text-sm mb-4">Essa ação não pode ser desfeita.</p>
+                <div class="flex gap-2">
+                    <button id="btnCancelDelete" style="flex: 1; padding: 12px; border: 1px solid var(--border); background: white; border-radius: 12px; font-weight: bold; color: var(--gray-text); cursor: pointer;">Cancelar</button>
+                    <button id="btnConfirmDelete" style="flex: 1; padding: 12px; border: none; background: var(--danger); border-radius: 12px; font-weight: bold; color: white; cursor: pointer;">Apagar</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Scripts Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, push, set, remove, get, query, orderByChild, startAt, endAt } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        // CONFIGURAÇÃO
+        // Configuração Firebase (Manter chaves por enquanto)
         const firebaseConfig = {
             apiKey: "AIzaSyAg9hwS3kOcAxBC_IlFgJF97G14ToAJ3Ek",
             authDomain: "financeiroproengtec.firebaseapp.com",
+            databaseURL: "https://financeiroproengtec-default-rtdb.firebaseio.com", 
             projectId: "financeiroproengtec",
             storageBucket: "financeiroproengtec.firebasestorage.app",
             messagingSenderId: "848391283452",
@@ -275,266 +413,479 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // VARIÁVEIS GLOBAIS
-        let currentMode = 'summary'; 
+        // --- Estado Global ---
+        const state = {
+            currentMode: 'detailed',
+            selectedItems: new Set(),
+            transactionCache: [],
+            itemToDelete: null,
+            chunkTimer: null,
+            isLongPeriod: false
+        };
+
         const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
         
-        // CATEGORIAS
-        const expenseCategories = [
-            { label: 'Gasolina', icon: '⛽' }, { label: 'Almoço', icon: '🍽️' }, { label: 'Material', icon: '🧱' },
-            { label: 'Equipe', icon: '👷' }, { label: 'Ferramenta', icon: '🔧' }, { label: 'Serviço', icon: '📋' },
-            { label: 'Banco', icon: '🏦' }, { label: 'Lazer', icon: '🍺' }, { label: 'Outro', icon: '📦' }
-        ];
-        const incomeCategories = [
-            { label: 'Obra/Solar', icon: '☀️' }, { label: 'Elétrica', icon: '⚡' }, { label: 'Venda', icon: '💰' },
-            { label: 'Serviço', icon: '🛠️' }, { label: 'Outro', icon: '📦' }
-        ];
-
-        // --- FUNÇÕES DE TELA ---
-        window.switchMode = (mode) => {
-            currentMode = mode;
-            document.getElementById('btnModeSummary').classList.toggle('active', mode === 'summary');
-            document.getElementById('btnModeDetailed').classList.toggle('active', mode === 'detailed');
-            
-            const detailSec = document.getElementById('detailedSection');
-            const summaryMsg = document.getElementById('summaryMessage');
-
-            if(mode === 'detailed') {
-                detailSec.classList.remove('hidden');
-                summaryMsg.classList.add('hidden');
-            } else {
-                detailSec.classList.add('hidden');
-                summaryMsg.classList.remove('hidden');
-            }
-            // Recalcula tudo para garantir que a tela está certa
-            fetchData();
+        const categories = {
+            expense: [
+                { label: 'Gasolina', icon: '⛽' }, { label: 'Almoço', icon: '🍽️' }, { label: 'Material', icon: '🧱' },
+                { label: 'Equipe', icon: '👷' }, { label: 'Ferramenta', icon: '🔧' }, { label: 'Serviço', icon: '📋' },
+                { label: 'Banco', icon: '🏦' }, { label: 'Lazer', icon: '🍺' }, { label: 'Outro', icon: '📦' }
+            ],
+            income: [
+                { label: 'Obra/Solar', icon: '☀️' }, { label: 'Elétrica', icon: '⚡' }, { label: 'Venda', icon: '💰' },
+                { label: 'Serviço', icon: '🛠️' }, { label: 'Outro', icon: '📦' }
+            ]
         };
 
-        window.setMonthToCurrent = () => {
-            const date = new Date();
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const lastDay = new Date(y, date.getMonth() + 1, 0).getDate();
-            
-            document.getElementById('dateStart').value = `${y}-${m}-01`;
-            document.getElementById('dateEnd').value = `${y}-${m}-${lastDay}`;
-            fetchData();
+        // --- Utilitários ---
+
+        // Sanitização contra XSS (Segurança)
+        const escapeHtml = (unsafe) => {
+            if (typeof unsafe !== 'string') return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Máscara de valor
-            const amt = document.getElementById('amount');
-            amt.addEventListener('input', (e) => {
-                let v = e.target.value.replace(/\D/g,"");
-                v = (parseInt(v || "0")/100).toFixed(2) + "";
-                e.target.value = v.replace(".",",");
-            });
+        const getLocalDateISO = () => {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            return now.toISOString().split('T')[0];
+        };
 
-            document.querySelectorAll('input[name="type"]').forEach(r => {
-                r.addEventListener('change', (e) => renderCategories(e.target.value));
-            });
+        const showToast = (message) => {
+            const t = document.getElementById("toast");
+            t.className = "show";
+            t.innerText = message;
+            setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+        };
 
-            // Botões
-            document.getElementById('btnLogin').onclick = doLogin;
-            document.getElementById('btnLogout').onclick = () => signOut(auth);
-            document.getElementById('btnFetch').onclick = fetchData;
-            
-            // Modal
-            const modal = document.getElementById('transactionModal');
-            document.getElementById('btnOpenModal').onclick = () => {
-                modal.classList.remove('hidden');
-                document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
-                document.getElementById('amount').value = '';
-                document.getElementById('descInput').value = '';
-                document.getElementById('amount').focus();
-            };
-            document.getElementById('btnCloseModal').onclick = () => modal.classList.add('hidden');
-            
-            // AQUI MUDOU: Usa a nova função simples
-            document.getElementById('addForm').onsubmit = saveTransactionSimple;
+        // --- Lógica da Aplicação (AppLogic) ---
 
-            renderCategories('expense');
-            window.setMonthToCurrent();
-        });
-
-        // --- AUTENTICAÇÃO ---
-        onAuthStateChanged(auth, (user) => {
-            if(user) {
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('appContent').classList.remove('hidden');
-                document.getElementById('userEmail').innerText = user.email;
-                document.getElementById('statusDot').style.background = "#34d399";
+        window.appLogic = {
+            switchMode: (mode) => {
+                state.currentMode = mode;
+                document.getElementById('btnModeSummary').classList.toggle('active', mode === 'summary');
+                document.getElementById('btnModeDetailed').classList.toggle('active', mode === 'detailed');
                 
-                // Só busca dados se estiver logado para evitar erro de permissão
-                setTimeout(fetchData, 1000); 
-            } else {
-                document.getElementById('loginScreen').classList.remove('hidden');
-                document.getElementById('appContent').classList.add('hidden');
-            }
-        });
+                const detailSec = document.getElementById('detailedSection');
+                const summaryMsg = document.getElementById('summaryMessage');
 
-        function doLogin() {
-            const e = document.getElementById('emailInput').value;
-            const p = document.getElementById('passInput').value;
-            const btn = document.getElementById('btnLogin');
-            btn.innerText = "...";
-            signInWithEmailAndPassword(auth, e, p)
-                .catch((err) => { 
-                    btn.innerText = "Erro"; 
-                    alert("Erro no login: " + err.message);
-                    setTimeout(()=>btn.innerText="Entrar", 2000); 
-                });
-        }
-
-        // --- BUSCA DE DADOS (AGORA CALCULA TUDO AQUI) ---
-        async function fetchData() {
-            const user = auth.currentUser;
-            if (!user) return; // Não busca se não tiver usuário
-
-            const start = document.getElementById('dateStart').value;
-            const end = document.getElementById('dateEnd').value;
+                if(mode === 'detailed') {
+                    detailSec.classList.remove('hidden');
+                    summaryMsg.classList.add('hidden');
+                    startChunkedRendering(state.transactionCache);
+                } else {
+                    detailSec.classList.add('hidden');
+                    summaryMsg.classList.remove('hidden');
+                    if(state.chunkTimer) cancelAnimationFrame(state.chunkTimer);
+                }
+            },
             
-            if(!start || !end) return;
+            forceShowList: () => window.appLogic.switchMode('detailed'),
 
+            setLast30Days: () => {
+                const end = new Date();
+                const start = new Date();
+                start.setDate(end.getDate() - 30);
+                
+                document.getElementById('dateStart').value = start.toISOString().split('T')[0];
+                document.getElementById('dateEnd').value = end.toISOString().split('T')[0];
+                fetchData();
+            },
+
+            initDatesIfEmpty: () => {
+                if(!document.getElementById('dateStart').value) window.appLogic.setLast30Days(); 
+            },
+
+            toggleSelection: (id) => {
+                const el = document.getElementById(`item-${id}`);
+                if(!el) return;
+
+                if (state.selectedItems.has(id)) {
+                    state.selectedItems.delete(id);
+                    el.classList.remove('selected');
+                } else {
+                    state.selectedItems.add(id);
+                    el.classList.add('selected');
+                }
+                calculateSelection();
+            },
+
+            clearSelection: () => {
+                state.selectedItems.clear();
+                document.querySelectorAll('.transaction-item.selected').forEach(el => el.classList.remove('selected'));
+                document.getElementById('selectionBar').classList.remove('visible');
+            },
+
+            prepareDelete: (id) => {
+                state.itemToDelete = id;
+                document.getElementById('confirmModal').classList.remove('hidden');
+            }
+        };
+
+        // --- Core Functions ---
+
+        async function fetchData() {
+            const startVal = document.getElementById('dateStart').value;
+            const endVal = document.getElementById('dateEnd').value;
             const loader = document.getElementById('loadingIndicator');
-            loader.style.opacity = 1;
+            const totalDisplay = document.getElementById('totalGlobal');
+            
+            totalDisplay.innerText = "R$ ...";
+            totalDisplay.style.color = "white";
+            
+            if(!startVal || !endVal) return;
 
-            let totalInc = 0;
-            let totalExp = 0;
-            const listEl = document.getElementById('transactionList');
-            listEl.innerHTML = '';
+            const d1 = new Date(startVal);
+            const d2 = new Date(endVal);
+            const diffDays = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)); 
+            state.isLongPeriod = diffDays > 45;
+
+            loader.style.opacity = 1;
+            window.appLogic.clearSelection(); 
 
             try {
-                // SEMPRE busca detalhado agora (mais seguro e evita erro de sincronia)
-                const qRef = query(ref(db, 'transacoes'), orderByChild('date'), startAt(start), endAt(end));
+                const qRef = query(ref(db, 'transacoes'), orderByChild('date'), startAt(startVal), endAt(endVal));
                 const snap = await get(qRef);
 
+                let totalIncCents = 0; 
+                let totalExpCents = 0;
                 const items = [];
+                
                 if(snap.exists()) {
                     snap.forEach(child => {
-                        items.push({ id: child.key, ...child.val() });
+                        const val = child.val();
+                        if(val) items.push({ id: child.key, ...val });
                     });
+                } else {
+                    updateUIEmpty();
+                    return;
                 }
 
-                // Ordena do mais novo para o mais antigo
-                items.sort((a,b) => b.date.localeCompare(a.date));
-
-                // Faz o loop para SOMAR e MONTAR a lista
-                items.forEach(t => {
-                    // Soma (Cálculo no celular, não no banco)
-                    if(t.type === 'income') totalInc += t.amount; else totalExp += t.amount;
-                    
-                    // Só cria o HTML se estiver no modo detalhado
-                    if (currentMode === 'detailed') {
-                        const dateParts = t.date.split('-');
-                        const div = document.createElement('div');
-                        div.className = `transaction-item ${t.type==='income'?'border-green':'border-red'}`;
-                        div.innerHTML = `
-                            <div class="flex items-center" style="gap:10px;">
-                                <div style="font-size:1.4rem;">${t.icon}</div>
-                                <div>
-                                    <div style="font-weight:bold; font-size:0.9rem;">${t.category}</div>
-                                    <div style="font-size:0.75rem; color:#64748b;">${dateParts[2]}/${dateParts[1]} • ${t.desc || ''}</div>
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                <div style="font-weight:bold; color:${t.type==='income'?'var(--success)':'var(--danger)'}">
-                                    ${t.type==='income'?'+':'-'} ${t.amount.toFixed(2)}
-                                </div>
-                                <button onclick="window.deleteItem('${t.id}')" style="background:none; border:none; color:#ef4444; font-size:0.7rem; margin-top:5px;">Excluir</button>
-                            </div>
-                        `;
-                        listEl.appendChild(div);
-                    }
-                });
+                // Ordenação local (mais recente primeiro)
+                items.sort((a,b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
                 
-                if(items.length === 0 && currentMode === 'detailed') {
-                    listEl.innerHTML = '<div class="text-center p-4 text-gray-500">Sem dados neste período.</div>';
+                state.transactionCache = items; 
+
+                // Cálculos Seguros (usando centavos para evitar erro de float)
+                items.forEach(t => {
+                    const amtCents = Math.round(parseFloat(t.amount || 0) * 100);
+                    if(t.type === 'income') totalIncCents += amtCents; 
+                    else totalExpCents += amtCents;
+                });
+
+                updateTotals(totalIncCents, totalExpCents);
+
+                if (state.isLongPeriod) {
+                    window.appLogic.switchMode('summary');
+                    showToast(`Período longo (${diffDays} dias). Exibindo resumo.`);
+                } else {
+                    if (state.currentMode === 'detailed') startChunkedRendering(items);
+                    else window.appLogic.switchMode('summary');
                 }
-
-                // ATUALIZA OS VALORES TOTAIS
-                const liquid = totalInc - totalExp;
-                document.getElementById('totalGlobal').innerText = formatter.format(liquid);
-                document.getElementById('sumIncome').innerText = formatter.format(totalInc);
-                document.getElementById('sumExpense').innerText = formatter.format(totalExp);
-                document.getElementById('resLiquid').innerText = formatter.format(liquid);
-                document.getElementById('resSplit').innerText = formatter.format(liquid / 3);
-
-                // Cores
-                document.getElementById('totalGlobal').style.color = liquid >= 0 ? 'white' : '#fca5a5';
-                document.getElementById('resLiquid').style.color = liquid >= 0 ? '#4ade80' : '#f87171';
 
             } catch (err) {
                 console.error(err);
-                if (err.code !== 'PERMISSION_DENIED') alert("Erro ao buscar: " + err.message);
+                showToast("Erro ao buscar dados.");
+                document.getElementById('errorMsgDisplay').innerText = err.message;
+                document.getElementById('errorMsgDisplay').classList.remove('hidden');
             } finally {
                 loader.style.opacity = 0;
             }
         }
 
-        // --- NOVA LÓGICA DE SALVAR (DIRETO E SEM TRAVA) ---
-        function saveTransactionSimple(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmit');
-            btn.disabled = true; btn.innerText = "Salvando...";
-
-            const type = document.querySelector('input[name="type"]:checked').value;
-            const raw = document.getElementById('amount').value.replace(/\./g,'').replace(',','.');
-            const amount = parseFloat(raw);
-            const date = document.getElementById('dateInput').value;
-            const desc = document.getElementById('descInput').value;
-            
-            const catLabel = document.querySelector('input[name="category"]:checked')?.value || 'Outro';
-            const list = type === 'income' ? incomeCategories : expenseCategories;
-            const icon = list.find(c => c.label === catLabel)?.icon || '📦';
-
-            if(!amount || !date) { 
-                btn.disabled = false; 
-                btn.innerText = "SALVAR";
-                return alert("Preencha o valor e a data."); 
-            }
-
-            // Simplesmente cria e salva. Sem transação complexa.
-            const newRef = push(ref(db, 'transacoes'));
-            
-            set(newRef, {
-                type, amount, date, category: catLabel, desc, icon
-            })
-            .then(() => {
-                document.getElementById('transactionModal').classList.add('hidden');
-                e.target.reset();
-                fetchData(); // Recarrega para mostrar o novo saldo
-            })
-            .catch((err) => {
-                alert("Erro ao salvar: " + err.message);
-            })
-            .finally(() => { 
-                btn.disabled = false; 
-                btn.innerText = "SALVAR"; 
-            });
+        function updateUIEmpty() {
+            updateTotals(0,0);
+            document.getElementById('transactionList').innerHTML = 
+                `<div class="text-center p-4 text-gray mt-4">
+                    📭<br>Nenhum lançamento no período.
+                </div>`;
+            document.getElementById('loadingIndicator').style.opacity = 0;
         }
 
-        // --- NOVA LÓGICA DE EXCLUIR ---
-        window.deleteItem = (id) => {
-            if(!confirm("Apagar este item?")) return;
-            remove(ref(db, `transacoes/${id}`))
-                .then(() => fetchData())
-                .catch(err => alert("Erro ao apagar: " + err.message));
-        };
+        function startChunkedRendering(items) {
+            const listEl = document.getElementById('transactionList');
+            const loader = document.getElementById('scrollLoader');
+            
+            if(state.chunkTimer) cancelAnimationFrame(state.chunkTimer);
+            
+            listEl.innerHTML = ''; 
+            let index = 0;
+            const CHUNK_SIZE = 40; 
+
+            function renderChunk() {
+                const chunk = items.slice(index, index + CHUNK_SIZE);
+                
+                if (chunk.length > 0) {
+                    const fragment = document.createDocumentFragment();
+                    
+                    chunk.forEach(t => {
+                        // Correção de Data para Exibição (Evita timezone bug)
+                        const [y, m, d] = t.date.split('-');
+                        const day = d;
+                        const month = m;
+                        
+                        const div = document.createElement('div');
+                        // Segurança: Sanitização de dados de entrada
+                        const safeDesc = escapeHtml(t.desc || '');
+                        const safeCat = escapeHtml(t.category || 'Geral');
+                        
+                        div.className = `transaction-item ${t.type==='income'?'border-l-success':'border-l-danger'} ${state.selectedItems.has(t.id) ? 'selected' : ''}`;
+                        div.id = `item-${t.id}`;
+                        div.onclick = () => window.appLogic.toggleSelection(t.id);
+                        
+                        div.innerHTML = `
+                            <div class="select-indicator"></div>
+                            <div style="flex:1">
+                                <div class="flex items-center gap-2">
+                                    <div style="font-size:1.4rem;">${t.icon || '📦'}</div>
+                                    <div>
+                                        <div class="font-bold text-sm">${safeCat}</div>
+                                        <div class="text-xs text-gray">${day}/${month} • ${safeDesc}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div style="font-weight:bold; color:${t.type==='income'?'var(--success)':'var(--danger)'}">
+                                    ${t.type==='income'?'+':'-'} ${(t.amount||0).toFixed(2).replace('.', ',')}
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Botão de deletar separado para não disparar o click do card
+                        const btnDel = document.createElement('button');
+                        btnDel.innerText = "🗑️";
+                        btnDel.className = "btn-delete-hitbox"; 
+                        btnDel.onclick = (e) => { 
+                            e.stopPropagation(); 
+                            window.appLogic.prepareDelete(t.id); 
+                        };
+                        div.appendChild(btnDel);
+                        fragment.appendChild(div);
+                    });
+
+                    listEl.appendChild(fragment);
+                    index += CHUNK_SIZE;
+
+                    if (index < items.length) {
+                        loader.style.display = 'block';
+                        state.chunkTimer = requestAnimationFrame(renderChunk);
+                    } else {
+                        loader.style.display = 'none';
+                    }
+                } else {
+                    loader.style.display = 'none';
+                }
+            }
+            renderChunk(); 
+        }
+
+        function updateTotals(incCents, expCents) {
+            const liquidCents = incCents - expCents;
+            const splitCents = Math.round(liquidCents / 3);
+            
+            const liquidVal = liquidCents / 100;
+            const incVal = incCents / 100;
+            const expVal = expCents / 100;
+            const splitVal = splitCents / 100;
+
+            document.getElementById('totalGlobal').innerText = formatter.format(liquidVal);
+            document.getElementById('sumIncome').innerText = formatter.format(incVal);
+            document.getElementById('sumExpense').innerText = formatter.format(expVal);
+            document.getElementById('resLiquid').innerText = formatter.format(liquidVal);
+            document.getElementById('resSplit').innerText = formatter.format(splitVal);
+            
+            document.getElementById('totalGlobal').style.color = liquidVal >= 0 ? 'white' : '#fca5a5';
+            document.getElementById('resLiquid').style.color = liquidVal >= 0 ? '#4ade80' : '#f87171';
+        }
+
+        function calculateSelection() {
+            let sumCents = 0; 
+            state.transactionCache.forEach(t => {
+                if(state.selectedItems.has(t.id)) {
+                     const amtCents = Math.round(parseFloat(t.amount) * 100);
+                     const val = t.type === 'income' ? amtCents : -amtCents;
+                     sumCents += val;
+                }
+            });
+            const bar = document.getElementById('selectionBar');
+            document.getElementById('selectedTotalDisplay').innerText = formatter.format(sumCents / 100);
+            if(state.selectedItems.size > 0) bar.classList.add('visible'); else bar.classList.remove('visible');
+        }
 
         function renderCategories(type) {
             const grid = document.getElementById('categoriesGrid');
-            const list = type === 'income' ? incomeCategories : expenseCategories;
+            const list = categories[type];
             grid.innerHTML = list.map((c,i) => `
                 <label style="cursor:pointer">
                     <input type="radio" name="category" value="${c.label}" class="hidden cat-radio" ${i===0?'checked':''}>
                     <div class="cat-option">
                         <div style="font-size:1.5rem">${c.icon}</div>
-                        <span style="font-size:0.7rem">${c.label}</span>
+                        <span class="text-xs">${c.label}</span>
                     </div>
                 </label>
             `).join('');
         }
+
+        // --- Event Listeners ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Máscara de Moeda (Input)
+            document.getElementById('amount').addEventListener('input', (e) => {
+                let v = e.target.value.replace(/\D/g,"");
+                if (v === "") return;
+                e.target.value = (parseInt(v)/100).toFixed(2).replace(".",",");
+            });
+
+            // Troca de Categorias ao mudar Tipo
+            document.querySelectorAll('input[name="type"]').forEach(r => {
+                r.addEventListener('change', (e) => renderCategories(e.target.value));
+            });
+
+            // Auth Events
+            document.getElementById('btnLogin').onclick = doLogin;
+            document.getElementById('btnLogout').onclick = () => signOut(auth);
+            
+            // App Events
+            document.getElementById('btnFetch').onclick = fetchData;
+            
+            // Modal Logic
+            const modal = document.getElementById('transactionModal');
+            document.getElementById('btnOpenModal').onclick = () => {
+                modal.classList.remove('hidden');
+                document.getElementById('addForm').reset();
+                document.getElementById('dateInput').value = getLocalDateISO();
+                
+                // Reset para Saída como padrão
+                const expenseRadio = document.querySelector('input[name="type"][value="expense"]');
+                expenseRadio.checked = true;
+                renderCategories('expense');
+                
+                setTimeout(() => document.getElementById('amount').focus(), 300);
+            };
+            document.getElementById('btnCloseModal').onclick = () => modal.classList.add('hidden');
+            document.getElementById('addForm').onsubmit = saveTransaction;
+
+            // Delete Logic
+            const confirmModal = document.getElementById('confirmModal');
+            document.getElementById('btnCancelDelete').onclick = () => {
+                confirmModal.classList.add('hidden');
+                state.itemToDelete = null;
+            };
+            document.getElementById('btnConfirmDelete').onclick = executeDelete;
+
+            renderCategories('expense');
+        });
+
+        // --- Firebase Actions ---
+
+        function doLogin() {
+            const e = document.getElementById('emailInput').value;
+            const p = document.getElementById('passInput').value;
+            const btn = document.getElementById('btnLogin');
+            btn.innerText = "Entrando...";
+            btn.disabled = true;
+            
+            signInWithEmailAndPassword(auth, e, p)
+                .catch((err) => { 
+                    document.getElementById('loginMsg').innerText = "Erro: " + err.message;
+                })
+                .finally(() => {
+                    btn.innerText = "Entrar";
+                    btn.disabled = false;
+                });
+        }
+
+        function saveTransaction(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            if(btn.disabled) return;
+
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const rawVal = document.getElementById('amount').value.replace(/\D/g, "");
+            const amount = rawVal ? parseFloat(rawVal) / 100 : 0;
+            const date = document.getElementById('dateInput').value;
+            const desc = document.getElementById('descInput').value;
+            const catLabel = document.querySelector('input[name="category"]:checked')?.value || 'Outro';
+            const icon = categories[type].find(c => c.label === catLabel)?.icon || '📦';
+
+            if(amount <= 0 || !date) { 
+                showToast("⚠️ Valor e data obrigatórios.");
+                return; 
+            }
+
+            btn.disabled = true; btn.innerText = "Salvando...";
+
+            const newRef = push(ref(db, 'transacoes'));
+            set(newRef, { 
+                type, amount, date, 
+                category: escapeHtml(catLabel), 
+                desc: escapeHtml(desc), 
+                icon 
+            })
+            .then(() => {
+                document.getElementById('transactionModal').classList.add('hidden');
+                showToast("✅ Salvo!");
+                fetchData();
+            })
+            .catch((err) => {
+                console.error(err);
+                showToast("❌ Erro ao salvar.");
+            })
+            .finally(() => { btn.disabled = false; btn.innerText = "SALVAR"; });
+        }
+
+        function executeDelete() {
+            if(!state.itemToDelete) return;
+            const btn = document.getElementById('btnConfirmDelete');
+            btn.disabled = true; btn.innerText = "...";
+            
+            remove(ref(db, `transacoes/${state.itemToDelete}`))
+                .then(() => {
+                    document.getElementById('confirmModal').classList.add('hidden');
+                    showToast("🗑️ Apagado.");
+                    // Remoção otimista da UI
+                    const el = document.getElementById(`item-${state.itemToDelete}`);
+                    if(el) el.remove();
+                    // Atualiza cache local
+                    state.transactionCache = state.transactionCache.filter(t => t.id !== state.itemToDelete);
+                    // Recalcula totais sem precisar ir ao servidor
+                    let inc=0, exp=0;
+                    state.transactionCache.forEach(t => {
+                         const amt = Math.round(t.amount*100);
+                         if(t.type==='income') inc+=amt; else exp+=amt;
+                    });
+                    updateTotals(inc, exp);
+                })
+                .catch(err => showToast("❌ Erro ao apagar."))
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerText = "Apagar";
+                    state.itemToDelete = null;
+                });
+        }
+
+        // --- Auth State Monitor ---
+        onAuthStateChanged(auth, (user) => {
+            const loginScreen = document.getElementById('loginScreen');
+            const appContent = document.getElementById('appContent');
+            
+            if(user) {
+                loginScreen.classList.add('hidden');
+                appContent.classList.remove('hidden');
+                document.getElementById('userEmail').innerText = user.email.split('@')[0];
+                document.getElementById('statusDot').style.background = "#34d399";
+                window.appLogic.initDatesIfEmpty();
+                fetchData(); 
+            } else {
+                loginScreen.classList.remove('hidden');
+                appContent.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
