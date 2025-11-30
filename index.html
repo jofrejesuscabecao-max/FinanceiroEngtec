@@ -12,6 +12,7 @@
             --primary-dark: #1e40af;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b; /* Cor para Cartão */
             --dark: #0f172a;
             --light: #f8fafc;
             --gray-text: #64748b;
@@ -40,6 +41,7 @@
         .text-gray { color: var(--gray-text); }
         .text-success { color: var(--success); }
         .text-danger { color: var(--danger); }
+        .text-warning { color: var(--warning); }
         .text-primary { color: var(--primary); }
         .w-full { width: 100%; }
         .hidden { display: none !important; }
@@ -134,6 +136,7 @@
         .transaction-item.selected { background-color: #eff6ff; border: 1px solid var(--primary); }
         .border-l-success { border-left-color: var(--success); }
         .border-l-danger { border-left-color: var(--danger); }
+        .border-l-warning { border-left-color: var(--warning); } /* Borda para Cartão */
         
         .select-indicator {
             width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1;
@@ -167,7 +170,7 @@
             background: white; width: 100%; max-width: 600px; 
             border-radius: 24px 24px 0 0; padding: 24px; 
             padding-bottom: max(40px, var(--safe-bottom)); 
-            max-height: 85vh; overflow-y: auto; 
+            max-height: 90vh; overflow-y: auto; 
             animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -183,9 +186,12 @@
             background: #eff6ff; border-color: var(--primary); 
             color: var(--primary); font-weight: bold; 
         }
+        /* Estilo específico para seleção de cartão */
+        #radioCredit:checked + .cat-option {
+            background: #fffbeb; border-color: var(--warning); color: var(--warning);
+        }
         
         .amount-input { 
-            /* AUMENTADO DE 2.5rem PARA 3.5rem */
             font-size: 3.5rem; 
             font-weight: 800; color: var(--dark); border: none; 
             border-bottom: 2px solid var(--border); width: 100%; padding: 10px; 
@@ -213,10 +219,8 @@
     </style>
 </head>
 <body>
-    <!-- Toast -->
     <div id="toast"></div>
 
-    <!-- Login Screen -->
     <div id="loginScreen" class="flex flex-col items-center justify-center">
         <div style="font-size: 4rem; margin-bottom: 20px;">🛡️</div>
         <h2 style="margin: 0;" class="text-2xl text-center text-white font-bold">Gestor Pro</h2>
@@ -230,7 +234,6 @@
         <p id="loginMsg" class="mt-4 text-sm text-danger"></p>
     </div>
 
-    <!-- App Content -->
     <div id="appContent" class="hidden">
         <header>
             <div class="flex justify-between items-center">
@@ -260,7 +263,6 @@
         </header>
 
         <main>
-            <!-- Filtro de Datas -->
             <div class="card">
                 <div class="flex justify-between items-center mb-2">
                     <span class="font-bold text-gray text-sm">📅 Período Personalizado</span>
@@ -273,7 +275,6 @@
                 <button id="btnFetch" class="btn-primary w-full mt-4" style="background: var(--dark);">🔎 Filtrar</button>
             </div>
 
-            <!-- Resumo Entradas/Saidas -->
             <div class="date-grid mb-4">
                 <div class="card text-center" style="margin:0; padding: 1rem;">
                     <p class="text-xs font-bold text-gray">ENTRADAS</p>
@@ -285,7 +286,6 @@
                 </div>
             </div>
 
-            <!-- Card Líquido -->
             <div class="card card-dark">
                 <div class="flex justify-between items-start">
                     <div>
@@ -300,7 +300,6 @@
                 </div>
             </div>
 
-            <!-- Lista Detalhada -->
             <div id="detailedSection">
                 <div class="flex justify-between items-center mb-2">
                     <h3 class="font-bold text-gray text-sm">📝 Extrato Detalhado</h3>
@@ -310,7 +309,6 @@
                 <div id="scrollLoader" class="text-center p-2 hidden text-sm text-gray">Carregando mais itens...</div>
             </div>
             
-            <!-- Mensagem Modo Rápido -->
             <div id="summaryMessage" class="hidden text-center text-gray p-8">
                 <span class="text-2xl">⚡</span><br>
                 <strong>Modo Rápido Ativo</strong><br>
@@ -319,7 +317,6 @@
             </div>
         </main>
 
-        <!-- Barra de Seleção (Soma) -->
         <div id="selectionBar">
             <div>
                 <div class="text-xs opacity-70">Soma Selecionada</div>
@@ -330,7 +327,6 @@
 
         <button id="btnOpenModal" class="fab" aria-label="Adicionar Transação">＋</button>
 
-        <!-- Modal Adicionar -->
         <div id="transactionModal" class="modal-overlay hidden">
             <div class="modal-content">
                 <div class="flex justify-between items-center mb-4">
@@ -338,28 +334,42 @@
                     <button id="btnCloseModal" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem; cursor:pointer;" aria-label="Fechar">✕</button>
                 </div>
                 <form id="addForm">
-                    <div class="date-grid mb-4">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;" class="mb-4">
                         <label style="cursor:pointer;">
                             <input type="radio" name="type" value="income" class="hidden cat-radio">
-                            <div class="cat-option" style="height:60px; flex-direction:row; gap:10px;">
-                                <span>⬆️</span><span class="text-success font-bold">Entrada</span>
+                            <div class="cat-option" style="height:60px; flex-direction:column; gap:2px; padding:5px;">
+                                <span style="font-size:1.2rem">⬆️</span><span class="text-success font-bold text-xs">Entrada</span>
                             </div>
                         </label>
                         <label style="cursor:pointer;">
                             <input type="radio" name="type" value="expense" class="hidden cat-radio" checked>
-                            <div class="cat-option" style="height:60px; flex-direction:row; gap:10px;">
-                                <span>⬇️</span><span class="text-danger font-bold">Saída</span>
+                            <div class="cat-option" style="height:60px; flex-direction:column; gap:2px; padding:5px;">
+                                <span style="font-size:1.2rem">⬇️</span><span class="text-danger font-bold text-xs">Saída</span>
+                            </div>
+                        </label>
+                        <label style="cursor:pointer;">
+                            <input type="radio" id="radioCredit" name="type" value="credit" class="hidden cat-radio">
+                            <div class="cat-option" style="height:60px; flex-direction:column; gap:2px; padding:5px;">
+                                <span style="font-size:1.2rem">💳</span><span class="text-warning font-bold text-xs">Cartão</span>
                             </div>
                         </label>
                     </div>
 
                     <div class="mb-4">
-                        <label class="text-xs font-bold text-gray block text-center mb-2">VALOR (R$)</label>
+                        <label class="text-xs font-bold text-gray block text-center mb-2">VALOR TOTAL (R$)</label>
                         <input type="tel" id="amount" class="amount-input" placeholder="0,00" required inputmode="numeric" onclick="this.select()">
                     </div>
 
+                    <div id="installmentsWrapper" class="hidden mb-4 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                        <label class="text-xs font-bold text-warning block mb-2 text-center">QUANTIDADE DE PARCELAS</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="installmentsInput" value="1" min="1" max="60" class="input-std text-center font-bold text-xl" style="border-color:var(--warning);">
+                        </div>
+                        <p class="text-center text-xs text-gray mt-2">Serão criados lançamentos mensais automaticamente.</p>
+                    </div>
+
                     <div class="mb-4">
-                        <label class="text-xs font-bold text-gray block mb-2">DATA</label>
+                        <label id="dateLabel" class="text-xs font-bold text-gray block mb-2">DATA</label>
                         <input type="date" id="dateInput" required class="input-std input-date">
                     </div>
 
@@ -378,7 +388,6 @@
             </div>
         </div>
 
-        <!-- Modal Confirmação -->
         <div id="confirmModal" class="modal-overlay hidden items-center">
             <div style="background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
                 <div class="text-2xl mb-2">🗑️</div>
@@ -392,13 +401,12 @@
         </div>
     </div>
 
-    <!-- Scripts Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, push, set, remove, get, query, orderByChild, startAt, endAt } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        // Configuração Firebase (Manter chaves por enquanto)
+        // Configuração Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAg9hwS3kOcAxBC_IlFgJF97G14ToAJ3Ek",
             authDomain: "financeiroproengtec.firebaseapp.com",
@@ -434,20 +442,19 @@
             income: [
                 { label: 'Obra/Solar', icon: '☀️' }, { label: 'Elétrica', icon: '⚡' }, { label: 'Venda', icon: '💰' },
                 { label: 'Serviço', icon: '🛠️' }, { label: 'Outro', icon: '📦' }
+            ],
+            credit: [
+                { label: 'Material', icon: '🧱' }, { label: 'Ferramenta', icon: '🔧' }, { label: 'Eletrônico', icon: '💻' },
+                { label: 'Lazer', icon: '🍺' }, { label: 'Assinatura', icon: '🔄' }, { label: 'Outro', icon: '💳' }
             ]
         };
 
         // --- Utilitários ---
-
-        // Sanitização contra XSS (Segurança)
         const escapeHtml = (unsafe) => {
             if (typeof unsafe !== 'string') return '';
             return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         };
 
         const getLocalDateISO = () => {
@@ -463,8 +470,7 @@
             setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
         };
 
-        // --- Lógica da Aplicação (AppLogic) ---
-
+        // --- Lógica da Aplicação ---
         window.appLogic = {
             switchMode: (mode) => {
                 state.currentMode = mode;
@@ -491,7 +497,6 @@
                 const end = new Date();
                 const start = new Date();
                 start.setDate(end.getDate() - 30);
-                
                 document.getElementById('dateStart').value = start.toISOString().split('T')[0];
                 document.getElementById('dateEnd').value = end.toISOString().split('T')[0];
                 fetchData();
@@ -504,7 +509,6 @@
             toggleSelection: (id) => {
                 const el = document.getElementById(`item-${id}`);
                 if(!el) return;
-
                 if (state.selectedItems.has(id)) {
                     state.selectedItems.delete(id);
                     el.classList.remove('selected');
@@ -526,8 +530,6 @@
                 document.getElementById('confirmModal').classList.remove('hidden');
             }
         };
-
-        // --- Core Functions ---
 
         async function fetchData() {
             const startVal = document.getElementById('dateStart').value;
@@ -566,13 +568,13 @@
                     return;
                 }
 
-                // Ordenação local (mais recente primeiro)
                 items.sort((a,b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
-                
                 state.transactionCache = items; 
 
-                // Cálculos Seguros (usando centavos para evitar erro de float)
+                // Cálculos - IGNORA CARTÃO (type === 'credit')
                 items.forEach(t => {
+                    if (t.type === 'credit') return; // Pula cartão no cálculo global
+
                     const amtCents = Math.round(parseFloat(t.amount || 0) * 100);
                     if(t.type === 'income') totalIncCents += amtCents; 
                     else totalExpCents += amtCents;
@@ -600,86 +602,85 @@
 
         function updateUIEmpty() {
             updateTotals(0,0);
-            document.getElementById('transactionList').innerHTML = 
-                `<div class="text-center p-4 text-gray mt-4">
-                    📭<br>Nenhum lançamento no período.
-                </div>`;
+            document.getElementById('transactionList').innerHTML = `<div class="text-center p-4 text-gray mt-4">📭<br>Nenhum lançamento.</div>`;
             document.getElementById('loadingIndicator').style.opacity = 0;
         }
 
         function startChunkedRendering(items) {
             const listEl = document.getElementById('transactionList');
             const loader = document.getElementById('scrollLoader');
-            
             if(state.chunkTimer) cancelAnimationFrame(state.chunkTimer);
-            
             listEl.innerHTML = ''; 
             let index = 0;
             const CHUNK_SIZE = 40; 
 
             function renderChunk() {
                 const chunk = items.slice(index, index + CHUNK_SIZE);
-                
                 if (chunk.length > 0) {
                     const fragment = document.createDocumentFragment();
-                    
                     chunk.forEach(t => {
-                        // Correção de Data para Exibição (Evita timezone bug)
                         const [y, m, d] = t.date.split('-');
-                        const day = d;
-                        const month = m;
-                        
-                        const div = document.createElement('div');
-                        // Segurança: Sanitização de dados de entrada
+                        const day = d; const month = m;
                         const safeDesc = escapeHtml(t.desc || '');
                         const safeCat = escapeHtml(t.category || 'Geral');
+                        const isCredit = t.type === 'credit';
                         
-                        div.className = `transaction-item ${t.type==='income'?'border-l-success':'border-l-danger'} ${state.selectedItems.has(t.id) ? 'selected' : ''}`;
+                        const div = document.createElement('div');
+                        // Define cor da borda baseado no tipo
+                        let borderClass = 'border-l-danger';
+                        if (t.type === 'income') borderClass = 'border-l-success';
+                        if (isCredit) borderClass = 'border-l-warning';
+
+                        div.className = `transaction-item ${borderClass} ${state.selectedItems.has(t.id) ? 'selected' : ''}`;
                         div.id = `item-${t.id}`;
                         div.onclick = () => window.appLogic.toggleSelection(t.id);
                         
+                        // Formatação do valor e texto
+                        let valColor = t.type==='income'?'var(--success)':'var(--danger)';
+                        let displayVal = `${t.type==='income'?'+':'-'} ${(t.amount||0).toFixed(2).replace('.', ',')}`;
+                        
+                        if(isCredit) {
+                            valColor = 'var(--warning)'; // Laranja para cartão
+                            // Se for cartão, tenta mostrar a parcela na descrição extra se existir, ou adapta
+                            displayVal = `${(t.amount||0).toFixed(2).replace('.', ',')}`; 
+                        }
+
+                        // Verifica se tem info de parcela na descrição (hack para visualização limpa)
+                        const extraInfo = isCredit && t.installInfo ? `<span class="text-xs bg-yellow-100 text-warning px-1 rounded ml-1">${t.installInfo}</span>` : '';
+
                         div.innerHTML = `
                             <div class="select-indicator"></div>
                             <div style="flex:1">
                                 <div class="flex items-center gap-2">
                                     <div style="font-size:1.4rem;">${t.icon || '📦'}</div>
                                     <div>
-                                        <div class="font-bold text-sm">${safeCat}</div>
+                                        <div class="font-bold text-sm flex items-center">${safeCat} ${extraInfo}</div>
                                         <div class="text-xs text-gray">${day}/${month} • ${safeDesc}</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="text-center">
-                                <div style="font-weight:bold; color:${t.type==='income'?'var(--success)':'var(--danger)'}">
-                                    ${t.type==='income'?'+':'-'} ${(t.amount||0).toFixed(2).replace('.', ',')}
+                                <div style="font-weight:bold; color:${valColor}">
+                                    ${displayVal}
                                 </div>
+                                ${isCredit ? '<div class="text-xs text-gray">Vencimento</div>' : ''}
                             </div>
                         `;
                         
-                        // Botão de deletar separado para não disparar o click do card
                         const btnDel = document.createElement('button');
                         btnDel.innerText = "🗑️";
                         btnDel.className = "btn-delete-hitbox"; 
-                        btnDel.onclick = (e) => { 
-                            e.stopPropagation(); 
-                            window.appLogic.prepareDelete(t.id); 
-                        };
+                        btnDel.onclick = (e) => { e.stopPropagation(); window.appLogic.prepareDelete(t.id); };
                         div.appendChild(btnDel);
                         fragment.appendChild(div);
                     });
-
                     listEl.appendChild(fragment);
                     index += CHUNK_SIZE;
-
                     if (index < items.length) {
                         loader.style.display = 'block';
                         state.chunkTimer = requestAnimationFrame(renderChunk);
-                    } else {
-                        loader.style.display = 'none';
-                    }
-                } else {
-                    loader.style.display = 'none';
-                }
+                    } else { loader.style.display = 'none'; }
+                } else { loader.style.display = 'none'; }
             }
             renderChunk(); 
         }
@@ -687,7 +688,6 @@
         function updateTotals(incCents, expCents) {
             const liquidCents = incCents - expCents;
             const splitCents = Math.round(liquidCents / 3);
-            
             const liquidVal = liquidCents / 100;
             const incVal = incCents / 100;
             const expVal = expCents / 100;
@@ -708,7 +708,8 @@
             state.transactionCache.forEach(t => {
                 if(state.selectedItems.has(t.id)) {
                      const amtCents = Math.round(parseFloat(t.amount) * 100);
-                     const val = t.type === 'income' ? amtCents : -amtCents;
+                     // Cartão conta como negativo na soma da seleção para facilitar conferência de faturas
+                     const val = (t.type === 'income') ? amtCents : -amtCents;
                      sumCents += val;
                 }
             });
@@ -719,7 +720,7 @@
 
         function renderCategories(type) {
             const grid = document.getElementById('categoriesGrid');
-            const list = categories[type];
+            const list = categories[type] || categories['expense'];
             grid.innerHTML = list.map((c,i) => `
                 <label style="cursor:pointer">
                     <input type="radio" name="category" value="${c.label}" class="hidden cat-radio" ${i===0?'checked':''}>
@@ -732,37 +733,42 @@
         }
 
         // --- Event Listeners ---
-
         document.addEventListener('DOMContentLoaded', () => {
-            // Máscara de Moeda (Input)
             document.getElementById('amount').addEventListener('input', (e) => {
                 let v = e.target.value.replace(/\D/g,"");
                 if (v === "") return;
                 e.target.value = (parseInt(v)/100).toFixed(2).replace(".",",");
             });
 
-            // Troca de Categorias ao mudar Tipo
+            // Lógica dos Radio Buttons do Modal
             document.querySelectorAll('input[name="type"]').forEach(r => {
-                r.addEventListener('change', (e) => renderCategories(e.target.value));
+                r.addEventListener('change', (e) => {
+                    const type = e.target.value;
+                    renderCategories(type);
+                    // Mostra campo de parcelas se for Cartão
+                    if(type === 'credit') {
+                        document.getElementById('installmentsWrapper').classList.remove('hidden');
+                        document.getElementById('dateLabel').innerText = "VENCIMENTO 1ª PARCELA";
+                    } else {
+                        document.getElementById('installmentsWrapper').classList.add('hidden');
+                        document.getElementById('dateLabel').innerText = "DATA";
+                    }
+                });
             });
 
-            // Auth Events
             document.getElementById('btnLogin').onclick = doLogin;
             document.getElementById('btnLogout').onclick = () => signOut(auth);
-            
-            // App Events
             document.getElementById('btnFetch').onclick = fetchData;
             
-            // Modal Logic
             const modal = document.getElementById('transactionModal');
             document.getElementById('btnOpenModal').onclick = () => {
                 modal.classList.remove('hidden');
                 document.getElementById('addForm').reset();
                 document.getElementById('dateInput').value = getLocalDateISO();
                 
-                // Reset para Saída como padrão
-                const expenseRadio = document.querySelector('input[name="type"][value="expense"]');
-                expenseRadio.checked = true;
+                document.querySelector('input[name="type"][value="expense"]').checked = true;
+                document.getElementById('installmentsWrapper').classList.add('hidden');
+                document.getElementById('dateLabel').innerText = "DATA";
                 renderCategories('expense');
                 
                 setTimeout(() => document.getElementById('amount').focus(), 300);
@@ -770,7 +776,6 @@
             document.getElementById('btnCloseModal').onclick = () => modal.classList.add('hidden');
             document.getElementById('addForm').onsubmit = saveTransaction;
 
-            // Delete Logic
             const confirmModal = document.getElementById('confirmModal');
             document.getElementById('btnCancelDelete').onclick = () => {
                 confirmModal.classList.add('hidden');
@@ -782,80 +787,107 @@
         });
 
         // --- Firebase Actions ---
-
         function doLogin() {
             const e = document.getElementById('emailInput').value;
             const p = document.getElementById('passInput').value;
             const btn = document.getElementById('btnLogin');
-            btn.innerText = "Entrando...";
-            btn.disabled = true;
-            
+            btn.innerText = "Entrando..."; btn.disabled = true;
             signInWithEmailAndPassword(auth, e, p)
-                .catch((err) => { 
-                    document.getElementById('loginMsg').innerText = "Erro: " + err.message;
-                })
-                .finally(() => {
-                    btn.innerText = "Entrar";
-                    btn.disabled = false;
-                });
+                .catch((err) => { document.getElementById('loginMsg').innerText = "Erro: " + err.message; })
+                .finally(() => { btn.innerText = "Entrar"; btn.disabled = false; });
         }
 
-        function saveTransaction(e) {
+        async function saveTransaction(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
             if(btn.disabled) return;
 
             const type = document.querySelector('input[name="type"]:checked').value;
             const rawVal = document.getElementById('amount').value.replace(/\D/g, "");
-            const amount = rawVal ? parseFloat(rawVal) / 100 : 0;
-            const date = document.getElementById('dateInput').value;
+            const totalAmount = rawVal ? parseFloat(rawVal) / 100 : 0;
+            const dateStr = document.getElementById('dateInput').value;
             const desc = document.getElementById('descInput').value;
             const catLabel = document.querySelector('input[name="category"]:checked')?.value || 'Outro';
-            const icon = categories[type].find(c => c.label === catLabel)?.icon || '📦';
+            const icon = (categories[type] || categories['expense']).find(c => c.label === catLabel)?.icon || '📦';
 
-            if(amount <= 0 || !date) { 
-                showToast("⚠️ Valor e data obrigatórios.");
-                return; 
-            }
+            if(totalAmount <= 0 || !dateStr) { showToast("⚠️ Valor e data obrigatórios."); return; }
 
             btn.disabled = true; btn.innerText = "Salvando...";
 
-            const newRef = push(ref(db, 'transacoes'));
-            set(newRef, { 
-                type, amount, date, 
-                category: escapeHtml(catLabel), 
-                desc: escapeHtml(desc), 
-                icon 
-            })
-            .then(() => {
+            try {
+                if (type === 'credit') {
+                    // Lógica de Parcelamento
+                    const installments = parseInt(document.getElementById('installmentsInput').value) || 1;
+                    const valPerInst = totalAmount / installments;
+                    const startDate = new Date(dateStr); // Cuidado com timezone, mas para adição simples funciona ok
+
+                    const updates = {};
+                    
+                    for (let i = 0; i < installments; i++) {
+                        const newRef = push(ref(db, 'transacoes'));
+                        
+                        // Calcula data futura
+                        let futureDate = new Date(startDate);
+                        // Ajusta o mês. setMonth lida com virada de ano automaticamente
+                        // Nota: setMonth(startDate.getMonth() + i) funciona se startDate for criado a cada loop ou clonado
+                        // Abordagem segura:
+                        futureDate.setMonth(startDate.getMonth() + i);
+                        
+                        const dateISO = futureDate.toISOString().split('T')[0];
+                        
+                        const payload = {
+                            type: 'credit',
+                            amount: valPerInst,
+                            date: dateISO,
+                            category: escapeHtml(catLabel),
+                            desc: escapeHtml(desc),
+                            icon: icon,
+                            installInfo: `${i+1}/${installments}` // Salva info da parcela (Ex: 1/10)
+                        };
+                        updates[newRef.key] = payload;
+                    }
+                    
+                    // Salva todas de uma vez (atomicamente seria melhor com update no root, mas loop de set funciona)
+                    // Como estamos usando push() dentro do loop para gerar keys, podemos usar update no parent
+                    await Promise.all(Object.keys(updates).map(k => set(ref(db, `transacoes/${k}`), updates[k])));
+
+                } else {
+                    // Lógica Normal (Receita/Despesa)
+                    const newRef = push(ref(db, 'transacoes'));
+                    await set(newRef, { 
+                        type, amount: totalAmount, date: dateStr, 
+                        category: escapeHtml(catLabel), 
+                        desc: escapeHtml(desc), 
+                        icon 
+                    });
+                }
+
                 document.getElementById('transactionModal').classList.add('hidden');
                 showToast("✅ Salvo!");
                 fetchData();
-            })
-            .catch((err) => {
+            } catch (err) {
                 console.error(err);
                 showToast("❌ Erro ao salvar.");
-            })
-            .finally(() => { btn.disabled = false; btn.innerText = "SALVAR"; });
+            } finally {
+                btn.disabled = false; btn.innerText = "SALVAR";
+            }
         }
 
         function executeDelete() {
             if(!state.itemToDelete) return;
             const btn = document.getElementById('btnConfirmDelete');
             btn.disabled = true; btn.innerText = "...";
-            
             remove(ref(db, `transacoes/${state.itemToDelete}`))
                 .then(() => {
                     document.getElementById('confirmModal').classList.add('hidden');
                     showToast("🗑️ Apagado.");
-                    // Remoção otimista da UI
                     const el = document.getElementById(`item-${state.itemToDelete}`);
                     if(el) el.remove();
-                    // Atualiza cache local
                     state.transactionCache = state.transactionCache.filter(t => t.id !== state.itemToDelete);
-                    // Recalcula totais sem precisar ir ao servidor
+                    // Recalcula totais locais
                     let inc=0, exp=0;
                     state.transactionCache.forEach(t => {
+                         if (t.type === 'credit') return; // Ignora cartão no recalculo
                          const amt = Math.round(t.amount*100);
                          if(t.type==='income') inc+=amt; else exp+=amt;
                     });
@@ -863,17 +895,14 @@
                 })
                 .catch(err => showToast("❌ Erro ao apagar."))
                 .finally(() => {
-                    btn.disabled = false;
-                    btn.innerText = "Apagar";
+                    btn.disabled = false; btn.innerText = "Apagar";
                     state.itemToDelete = null;
                 });
         }
 
-        // --- Auth State Monitor ---
         onAuthStateChanged(auth, (user) => {
             const loginScreen = document.getElementById('loginScreen');
             const appContent = document.getElementById('appContent');
-            
             if(user) {
                 loginScreen.classList.add('hidden');
                 appContent.classList.remove('hidden');
