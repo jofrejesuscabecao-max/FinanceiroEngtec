@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#2563eb">
-    <title>Gestor Pro - Dual Mode</title>
+    <title>Gestor Pro - Rápido</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -95,7 +95,6 @@
         }
         .border-green { border-left-color: var(--success); }
         .border-red { border-left-color: var(--danger); }
-        .blur-list { filter: blur(4px); opacity: 0.5; pointer-events: none; }
         
         .empty-state { text-align: center; color: var(--gray-text); padding: 40px; font-style: italic; font-size: 0.9rem; }
 
@@ -119,7 +118,6 @@
 </head>
 <body>
 
-    <!-- LOGIN -->
     <div id="loginScreen">
         <div style="font-size: 4rem; margin-bottom: 20px;">🛡️</div>
         <h2 style="margin: 0;">Gestor Pro</h2>
@@ -132,7 +130,6 @@
         <p id="loginMsg" style="margin-top:20px; font-size:0.8rem; color:#fca5a5;"></p>
     </div>
 
-    <!-- APP CONTENT -->
     <div id="appContent" class="hidden">
         <header>
             <div class="flex justify-between items-center">
@@ -146,7 +143,6 @@
                 <button id="btnLogout" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 10px; border-radius:8px; font-size:0.75rem;">Sair</button>
             </div>
 
-            <!-- MODO DE OPERAÇÃO -->
             <div class="mode-switch">
                 <button class="mode-btn active" id="btnModeSummary" onclick="switchMode('summary')">⚡ Rápido (Soma)</button>
                 <button class="mode-btn" id="btnModeDetailed" onclick="switchMode('detailed')">📝 Detalhado</button>
@@ -160,7 +156,6 @@
         </header>
 
         <main>
-            <!-- CONTROLE DE PERÍODO -->
             <div class="card">
                 <div class="flex justify-between items-center" style="margin-bottom:10px;">
                     <span class="font-bold text-gray-700" style="font-size:0.9rem;">📅 Período de Análise</span>
@@ -173,7 +168,6 @@
                 <button id="btnFetch" style="width:100%; margin-top:12px; background:var(--dark); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">🔎 Buscar Dados</button>
             </div>
 
-            <!-- RESULTADOS -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem;">
                 <div class="card text-center" style="margin:0; padding: 1rem;">
                     <p style="font-size:0.7rem; color:var(--gray-text); font-weight: bold;">ENTRADAS</p>
@@ -185,7 +179,6 @@
                 </div>
             </div>
 
-            <!-- CARD LUCRO -->
             <div class="card card-dark">
                 <div class="flex justify-between items-start">
                     <div>
@@ -200,7 +193,6 @@
                 </div>
             </div>
 
-            <!-- ÁREA DE LISTA (SÓ APARECE NO MODO DETALHADO) -->
             <div id="detailedSection" class="hidden">
                 <h3 class="font-bold text-gray-700" style="margin-bottom:10px; font-size:1rem;">📝 Extrato Detalhado</h3>
                 <div id="transactionList"></div>
@@ -209,16 +201,13 @@
             <div id="summaryMessage" class="empty-state">
                 <span style="font-size:2rem;">⚡</span><br>
                 Modo Rápido Ativo.<br>
-                A lista detalhada está oculta para economizar dados.<br>
-                Mude para "Detalhado" para ver itens individuais.
+                Toque em "Detalhado" para ver a lista.
             </div>
 
         </main>
 
-        <!-- FAB ADD -->
         <button id="btnOpenModal" class="fab">＋</button>
 
-        <!-- MODAL -->
         <div id="transactionModal" class="modal-overlay hidden">
             <div class="modal-content">
                 <div class="flex justify-between items-center mb-6">
@@ -267,13 +256,12 @@
         </div>
     </div>
 
-    <!-- FIREBASE MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, push, remove, get, query, orderByChild, startAt, endAt, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, push, set, remove, get, query, orderByChild, startAt, endAt } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        // CONFIG
+        // CONFIGURAÇÃO
         const firebaseConfig = {
             apiKey: "AIzaSyAg9hwS3kOcAxBC_IlFgJF97G14ToAJ3Ek",
             authDomain: "financeiroproengtec.firebaseapp.com",
@@ -287,11 +275,11 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // STATE
-        let currentMode = 'summary'; // 'summary' ou 'detailed'
+        // VARIÁVEIS GLOBAIS
+        let currentMode = 'summary'; 
         const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
         
-        // CATEGORIES
+        // CATEGORIAS
         const expenseCategories = [
             { label: 'Gasolina', icon: '⛽' }, { label: 'Almoço', icon: '🍽️' }, { label: 'Material', icon: '🧱' },
             { label: 'Equipe', icon: '👷' }, { label: 'Ferramenta', icon: '🔧' }, { label: 'Serviço', icon: '📋' },
@@ -302,7 +290,7 @@
             { label: 'Serviço', icon: '🛠️' }, { label: 'Outro', icon: '📦' }
         ];
 
-        // --- INIT ---
+        // --- FUNÇÕES DE TELA ---
         window.switchMode = (mode) => {
             currentMode = mode;
             document.getElementById('btnModeSummary').classList.toggle('active', mode === 'summary');
@@ -318,7 +306,7 @@
                 detailSec.classList.add('hidden');
                 summaryMsg.classList.remove('hidden');
             }
-            // Trigger fetch automatically on switch
+            // Recalcula tudo para garantir que a tela está certa
             fetchData();
         };
 
@@ -334,7 +322,7 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Setup Inputs
+            // Máscara de valor
             const amt = document.getElementById('amount');
             amt.addEventListener('input', (e) => {
                 let v = e.target.value.replace(/\D/g,"");
@@ -346,7 +334,7 @@
                 r.addEventListener('change', (e) => renderCategories(e.target.value));
             });
 
-            // Listeners
+            // Botões
             document.getElementById('btnLogin').onclick = doLogin;
             document.getElementById('btnLogout').onclick = () => signOut(auth);
             document.getElementById('btnFetch').onclick = fetchData;
@@ -361,21 +349,24 @@
                 document.getElementById('amount').focus();
             };
             document.getElementById('btnCloseModal').onclick = () => modal.classList.add('hidden');
-            document.getElementById('addForm').onsubmit = saveTransaction;
+            
+            // AQUI MUDOU: Usa a nova função simples
+            document.getElementById('addForm').onsubmit = saveTransactionSimple;
 
-            // Defaults
             renderCategories('expense');
             window.setMonthToCurrent();
         });
 
-        // --- AUTH ---
+        // --- AUTENTICAÇÃO ---
         onAuthStateChanged(auth, (user) => {
             if(user) {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('appContent').classList.remove('hidden');
                 document.getElementById('userEmail').innerText = user.email;
                 document.getElementById('statusDot').style.background = "#34d399";
-                fetchData();
+                
+                // Só busca dados se estiver logado para evitar erro de permissão
+                setTimeout(fetchData, 1000); 
             } else {
                 document.getElementById('loginScreen').classList.remove('hidden');
                 document.getElementById('appContent').classList.add('hidden');
@@ -388,15 +379,22 @@
             const btn = document.getElementById('btnLogin');
             btn.innerText = "...";
             signInWithEmailAndPassword(auth, e, p)
-                .catch(() => { btn.innerText = "Erro"; setTimeout(()=>btn.innerText="Entrar", 2000); });
+                .catch((err) => { 
+                    btn.innerText = "Erro"; 
+                    alert("Erro no login: " + err.message);
+                    setTimeout(()=>btn.innerText="Entrar", 2000); 
+                });
         }
 
-        // --- CORE LOGIC: FETCHING ---
+        // --- BUSCA DE DADOS (AGORA CALCULA TUDO AQUI) ---
         async function fetchData() {
+            const user = auth.currentUser;
+            if (!user) return; // Não busca se não tiver usuário
+
             const start = document.getElementById('dateStart').value;
             const end = document.getElementById('dateEnd').value;
             
-            if(!start || !end) return alert("Selecione as datas.");
+            if(!start || !end) return;
 
             const loader = document.getElementById('loadingIndicator');
             loader.style.opacity = 1;
@@ -407,41 +405,27 @@
             listEl.innerHTML = '';
 
             try {
-                if (currentMode === 'summary') {
-                    // MODO RÁPIDO: Consulta 'resumo_diario'
-                    // Como as chaves são YYYY-MM-DD, podemos usar startAt/endAt lexicográfico
-                    const qRef = query(ref(db, 'resumo_diario'), orderByChild('date'), startAt(start), endAt(end));
-                    const snap = await get(qRef);
+                // SEMPRE busca detalhado agora (mais seguro e evita erro de sincronia)
+                const qRef = query(ref(db, 'transacoes'), orderByChild('date'), startAt(start), endAt(end));
+                const snap = await get(qRef);
+
+                const items = [];
+                if(snap.exists()) {
+                    snap.forEach(child => {
+                        items.push({ id: child.key, ...child.val() });
+                    });
+                }
+
+                // Ordena do mais novo para o mais antigo
+                items.sort((a,b) => b.date.localeCompare(a.date));
+
+                // Faz o loop para SOMAR e MONTAR a lista
+                items.forEach(t => {
+                    // Soma (Cálculo no celular, não no banco)
+                    if(t.type === 'income') totalInc += t.amount; else totalExp += t.amount;
                     
-                    if(snap.exists()) {
-                        snap.forEach(child => {
-                            const day = child.val();
-                            totalInc += (day.income || 0);
-                            totalExp += (day.expense || 0);
-                        });
-                    }
-
-                } else {
-                    // MODO DETALHADO: Consulta 'transacoes'
-                    // Deve haver um index no Firebase Rules: "transacoes": { ".indexOn": "date" }
-                    const qRef = query(ref(db, 'transacoes'), orderByChild('date'), startAt(start), endAt(end));
-                    const snap = await get(qRef);
-
-                    const items = [];
-                    if(snap.exists()) {
-                        snap.forEach(child => {
-                            items.push({ id: child.key, ...child.val() });
-                        });
-                    }
-
-                    // Ordena localmente (Mais recente primeiro)
-                    items.sort((a,b) => b.date.localeCompare(a.date));
-
-                    items.forEach(t => {
-                        // Soma
-                        if(t.type === 'income') totalInc += t.amount; else totalExp += t.amount;
-                        
-                        // Renderiza Item
+                    // Só cria o HTML se estiver no modo detalhado
+                    if (currentMode === 'detailed') {
                         const dateParts = t.date.split('-');
                         const div = document.createElement('div');
                         div.className = `transaction-item ${t.type==='income'?'border-green':'border-red'}`;
@@ -457,16 +441,18 @@
                                 <div style="font-weight:bold; color:${t.type==='income'?'var(--success)':'var(--danger)'}">
                                     ${t.type==='income'?'+':'-'} ${t.amount.toFixed(2)}
                                 </div>
-                                <button onclick="window.deleteItem('${t.id}', '${t.date}', '${t.type}', ${t.amount})" style="background:none; border:none; color:#ef4444; font-size:0.7rem; margin-top:5px;">Excluir</button>
+                                <button onclick="window.deleteItem('${t.id}')" style="background:none; border:none; color:#ef4444; font-size:0.7rem; margin-top:5px;">Excluir</button>
                             </div>
                         `;
                         listEl.appendChild(div);
-                    });
-                    
-                    if(items.length === 0) listEl.innerHTML = '<div class="text-center p-4 text-gray-500">Sem dados neste período.</div>';
+                    }
+                });
+                
+                if(items.length === 0 && currentMode === 'detailed') {
+                    listEl.innerHTML = '<div class="text-center p-4 text-gray-500">Sem dados neste período.</div>';
                 }
 
-                // UI UPDATE (COMMOM)
+                // ATUALIZA OS VALORES TOTAIS
                 const liquid = totalInc - totalExp;
                 document.getElementById('totalGlobal').innerText = formatter.format(liquid);
                 document.getElementById('sumIncome').innerText = formatter.format(totalInc);
@@ -480,14 +466,14 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Erro ao buscar: " + err.message);
+                if (err.code !== 'PERMISSION_DENIED') alert("Erro ao buscar: " + err.message);
             } finally {
                 loader.style.opacity = 0;
             }
         }
 
-        // --- CORE LOGIC: WRITING (DUAL WRITE) ---
-        function saveTransaction(e) {
+        // --- NOVA LÓGICA DE SALVAR (DIRETO E SEM TRAVA) ---
+        function saveTransactionSimple(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
             btn.disabled = true; btn.innerText = "Salvando...";
@@ -498,63 +484,44 @@
             const date = document.getElementById('dateInput').value;
             const desc = document.getElementById('descInput').value;
             
-            // Categoria Info
             const catLabel = document.querySelector('input[name="category"]:checked')?.value || 'Outro';
             const list = type === 'income' ? incomeCategories : expenseCategories;
             const icon = list.find(c => c.label === catLabel)?.icon || '📦';
 
-            if(!amount || !date) { btn.disabled = false; return alert("Preencha valores."); }
+            if(!amount || !date) { 
+                btn.disabled = false; 
+                btn.innerText = "SALVAR";
+                return alert("Preencha o valor e a data."); 
+            }
 
-            // 1. Salva a transação detalhada
+            // Simplesmente cria e salva. Sem transação complexa.
             const newRef = push(ref(db, 'transacoes'));
-            const transPromise = newRef.set({
+            
+            set(newRef, {
                 type, amount, date, category: catLabel, desc, icon
+            })
+            .then(() => {
+                document.getElementById('transactionModal').classList.add('hidden');
+                e.target.reset();
+                fetchData(); // Recarrega para mostrar o novo saldo
+            })
+            .catch((err) => {
+                alert("Erro ao salvar: " + err.message);
+            })
+            .finally(() => { 
+                btn.disabled = false; 
+                btn.innerText = "SALVAR"; 
             });
-
-            // 2. Atualiza o Resumo Diário (Atomicamente)
-            const summaryRef = ref(db, `resumo_diario/${date}`);
-            const summaryPromise = runTransaction(summaryRef, (currentData) => {
-                if (currentData === null) {
-                    return { date: date, income: type==='income'?amount:0, expense: type==='expense'?amount:0 };
-                } else {
-                    if(type === 'income') currentData.income = (currentData.income || 0) + amount;
-                    else currentData.expense = (currentData.expense || 0) + amount;
-                    return currentData;
-                }
-            });
-
-            Promise.all([transPromise, summaryPromise])
-                .then(() => {
-                    document.getElementById('transactionModal').classList.add('hidden');
-                    e.target.reset();
-                    fetchData(); // Refresh na tela
-                })
-                .catch(err => alert("Erro: " + err))
-                .finally(() => { btn.disabled = false; btn.innerText = "SALVAR"; });
         }
 
-        // --- CORE LOGIC: DELETING (DUAL WRITE) ---
-        window.deleteItem = (id, date, type, amount) => {
+        // --- NOVA LÓGICA DE EXCLUIR ---
+        window.deleteItem = (id) => {
             if(!confirm("Apagar este item?")) return;
-
-            // 1. Remove Detalhado
-            const p1 = remove(ref(db, `transacoes/${id}`));
-
-            // 2. Atualiza Resumo (Reverso)
-            const summaryRef = ref(db, `resumo_diario/${date}`);
-            const p2 = runTransaction(summaryRef, (currentData) => {
-                if(!currentData) return null; // Já não existe
-                
-                if(type === 'income') currentData.income = Math.max(0, (currentData.income || 0) - amount);
-                else currentData.expense = Math.max(0, (currentData.expense || 0) - amount);
-                
-                return currentData;
-            });
-
-            Promise.all([p1, p2]).then(() => fetchData());
+            remove(ref(db, `transacoes/${id}`))
+                .then(() => fetchData())
+                .catch(err => alert("Erro ao apagar: " + err.message));
         };
 
-        // --- HELPERS ---
         function renderCategories(type) {
             const grid = document.getElementById('categoriesGrid');
             const list = type === 'income' ? incomeCategories : expenseCategories;
@@ -571,4 +538,3 @@
     </script>
 </body>
 </html>
-
