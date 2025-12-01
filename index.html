@@ -14,6 +14,7 @@
             --danger: #ef4444;
             --warning: #f59e0b; 
             --warning-bg: #fffbeb;
+            --box-color: #8b5cf6; /* Roxo para Caixinhas */
             --dark: #0f172a;
             --light: #f8fafc;
             --gray-text: #64748b;
@@ -110,13 +111,13 @@
         /* Mode Switcher */
         .mode-switch {
             background: rgba(0,0,0,0.2); border-radius: 20px; padding: 4px; 
-            margin: 10px auto; width: fit-content;
-            display: flex; gap: 5px;
+            margin: 10px auto; width: 100%; max-width: 400px;
+            display: flex; justify-content: space-between; gap: 2px;
         }
         .mode-btn {
             background: transparent; border: none; color: rgba(255,255,255,0.6); 
-            padding: 6px 12px; border-radius: 16px; font-size: 0.75rem; 
-            font-weight: bold; cursor: pointer; transition: all 0.2s;
+            padding: 6px 8px; border-radius: 16px; font-size: 0.75rem; flex: 1;
+            font-weight: bold; cursor: pointer; transition: all 0.2s; white-space: nowrap;
         }
         .mode-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
@@ -172,6 +173,25 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px; background: white; margin-bottom: 6px; border-radius: 10px;
             border: 1px solid #f1f5f9;
+        }
+
+        /* Styles para Caixinhas */
+        .box-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .box-card {
+            background: white; border-radius: 20px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border);
+            position: relative; overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .box-card:active { transform: scale(0.98); }
+        .box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .box-icon { font-size: 2rem; background: #f3f4f6; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 15px; }
+        .progress-bg { background: #e2e8f0; height: 8px; border-radius: 4px; width: 100%; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: var(--box-color); width: 0%; transition: width 0.5s ease; }
+        .box-values { display: flex; justify-content: space-between; align-items: flex-end; }
+        .box-btn-add {
+            background: var(--box-color); color: white; border: none; width: 100%; padding: 12px;
+            border-radius: 12px; font-weight: bold; margin-top: 15px; cursor: pointer;
         }
 
         /* FAB & Modals */
@@ -271,10 +291,11 @@
                 <button class="mode-btn" id="btnModeSummary" onclick="appLogic.switchMode('summary')">⚡ Rápido</button>
                 <button class="mode-btn active" id="btnModeDetailed" onclick="appLogic.switchMode('detailed')">📝 Detalhado</button>
                 <button class="mode-btn" id="btnModeCards" onclick="appLogic.switchMode('cards')">💳 Cartões</button>
+                <button class="mode-btn" id="btnModeBoxes" onclick="appLogic.switchMode('boxes')">📦 Caixinhas</button>
             </div>
 
             <div class="text-center mt-4">
-                <p class="text-xs opacity-70" style="text-transform: uppercase; letter-spacing: 1px;">Saldo do Período</p>
+                <p id="headerLabel" class="text-xs opacity-70" style="text-transform: uppercase; letter-spacing: 1px;">Saldo do Período</p>
                 <div style="min-height: 60px;" class="flex flex-col items-center justify-center">
                      <h2 id="totalGlobal" style="font-size: 2.5rem; margin: 0; font-weight: 900;">R$ ...</h2>
                      <p id="errorMsgDisplay" class="text-danger text-sm hidden mt-2"></p>
@@ -284,7 +305,7 @@
         </header>
 
         <main>
-            <div class="card">
+            <div id="dateFilterSection" class="card">
                 <div class="flex justify-between items-center mb-2">
                     <span class="font-bold text-gray text-sm">📅 Período Personalizado</span>
                     <button onclick="appLogic.setLast30Days()" style="border:1px solid var(--border); background:white; border-radius:15px; padding:4px 12px; font-size:0.75rem; color:var(--primary);">Últimos 30 Dias</button>
@@ -342,6 +363,13 @@
                     <button onclick="appLogic.setNext12Months()" style="background:#fffbeb; color:#d97706; border:1px solid #fcd34d; padding:5px 10px; border-radius:10px; font-size:0.7rem; font-weight:bold;">📅 Ver Próximos 12 Meses</button>
                 </div>
                 <div id="cardsList"></div>
+            </div>
+
+            <div id="boxesSection" class="hidden">
+                <button onclick="appLogic.openCreateBox()" style="width:100%; padding:15px; border:2px dashed var(--box-color); color:var(--box-color); background:rgba(139, 92, 246, 0.05); border-radius:20px; font-weight:bold; margin-bottom:20px; cursor:pointer;">
+                    + Nova Caixinha
+                </button>
+                <div id="boxesList" class="box-grid"></div>
             </div>
 
             <div id="summaryMessage" class="hidden text-center text-gray p-8">
@@ -422,6 +450,49 @@
             </div>
         </div>
 
+        <div id="boxModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-xl" style="color:var(--box-color)">Nova Caixinha</h2>
+                    <button onclick="document.getElementById('boxModal').classList.add('hidden')" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem; cursor:pointer;">✕</button>
+                </div>
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-gray block mb-2">NOME DO OBJETIVO</label>
+                    <input type="text" id="boxName" class="input-std" placeholder="Ex: Obra do Escritório" required>
+                </div>
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-gray block mb-2">VALOR DA META (R$)</label>
+                    <input type="tel" id="boxTarget" class="input-std" placeholder="0,00" required inputmode="numeric">
+                </div>
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-gray block mb-2">ÍCONE</label>
+                    <input type="text" id="boxIcon" class="input-std text-center" value="💰" style="font-size: 2rem;">
+                </div>
+                <button onclick="appLogic.createBox()" class="btn-primary w-full" style="background:var(--box-color)">CRIAR CAIXINHA</button>
+            </div>
+        </div>
+
+        <div id="boxActionModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="text-center mb-4">
+                    <div id="actionBoxIcon" style="font-size:3rem;"></div>
+                    <h2 id="actionBoxName" class="font-bold text-xl mt-2"></h2>
+                    <p class="text-xs text-gray">Saldo Atual: <span id="actionBoxBalance" class="font-bold text-dark"></span></p>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-gray block text-center mb-2">VALOR (R$)</label>
+                    <input type="tel" id="boxActionAmount" class="amount-input" placeholder="0,00" inputmode="numeric">
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="appLogic.updateBoxBalance(-1)" style="flex:1; padding:15px; border-radius:12px; border:none; background:#fee2e2; color:var(--danger); font-weight:bold; cursor:pointer;">Resgatar</button>
+                    <button onclick="appLogic.updateBoxBalance(1)" style="flex:1; padding:15px; border-radius:12px; border:none; background:#dcfce7; color:var(--success); font-weight:bold; cursor:pointer;">Depositar</button>
+                </div>
+                <button onclick="appLogic.deleteBox()" class="text-xs text-danger mt-6 w-full text-center bg-transparent border-none cursor-pointer underline">Excluir Caixinha</button>
+            </div>
+        </div>
+
         <div id="confirmModal" class="modal-overlay hidden items-center">
             <div style="background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
                 <div class="text-2xl mb-2">🗑️</div>
@@ -437,7 +508,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, push, set, remove, get, query, orderByChild, startAt, endAt } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, push, set, remove, get, query, orderByChild, startAt, endAt, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -460,7 +531,9 @@
             transactionCache: [],
             itemToDelete: null,
             chunkTimer: null,
-            isLongPeriod: false
+            isLongPeriod: false,
+            activeBoxId: null,
+            currentBoxData: null
         };
 
         const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -506,17 +579,29 @@
                 document.getElementById('btnModeSummary').classList.toggle('active', mode === 'summary');
                 document.getElementById('btnModeDetailed').classList.toggle('active', mode === 'detailed');
                 document.getElementById('btnModeCards').classList.toggle('active', mode === 'cards');
+                document.getElementById('btnModeBoxes').classList.toggle('active', mode === 'boxes');
                 
                 const detailSec = document.getElementById('detailedSection');
                 const cardsSec = document.getElementById('cardsSection');
+                const boxesSec = document.getElementById('boxesSection');
                 const summaryMsg = document.getElementById('summaryMessage');
                 const financeDash = document.getElementById('financeDash');
+                const dateFilter = document.getElementById('dateFilterSection');
+                const fab = document.getElementById('btnOpenModal');
+                const headerTotal = document.getElementById('totalGlobal');
+                const headerLabel = document.getElementById('headerLabel');
 
-                // Reset
+                // Reset Defaults
                 detailSec.classList.add('hidden');
                 cardsSec.classList.add('hidden');
+                boxesSec.classList.add('hidden');
                 summaryMsg.classList.add('hidden');
-                financeDash.classList.remove('hidden'); // Painel financeiro padrão
+                financeDash.classList.remove('hidden'); 
+                dateFilter.classList.remove('hidden');
+                fab.classList.remove('hidden');
+                headerLabel.innerText = "SALDO DO PERÍODO";
+                headerTotal.style.color = "white"; // Reset color
+
                 if(state.chunkTimer) cancelAnimationFrame(state.chunkTimer);
 
                 if(mode === 'detailed') {
@@ -525,8 +610,16 @@
                 } 
                 else if (mode === 'cards') {
                     cardsSec.classList.remove('hidden');
-                    financeDash.classList.add('hidden'); // Esconde o resumo financeiro normal
+                    financeDash.classList.add('hidden'); 
                     renderCardsView(state.transactionCache);
+                }
+                else if (mode === 'boxes') {
+                    boxesSec.classList.remove('hidden');
+                    financeDash.classList.add('hidden');
+                    dateFilter.classList.add('hidden'); // Não usa filtro de data
+                    fab.classList.add('hidden'); // Esconde botão de add transação
+                    headerLabel.innerText = "TOTAL EM CAIXINHAS";
+                    fetchBoxes();
                 }
                 else {
                     summaryMsg.classList.remove('hidden');
@@ -581,8 +674,130 @@
             prepareDelete: (id) => {
                 state.itemToDelete = id;
                 document.getElementById('confirmModal').classList.remove('hidden');
+            },
+
+            // --- FUNÇÕES DE CAIXINHA ---
+            openCreateBox: () => {
+                document.getElementById('boxName').value = '';
+                document.getElementById('boxTarget').value = '';
+                document.getElementById('boxModal').classList.remove('hidden');
+            },
+
+            createBox: async () => {
+                const name = document.getElementById('boxName').value;
+                const targetRaw = document.getElementById('boxTarget').value.replace(/\D/g, "");
+                const target = targetRaw ? parseFloat(targetRaw) / 100 : 0;
+                const icon = document.getElementById('boxIcon').value || '💰';
+
+                if(!name || target <= 0) { showToast("⚠️ Preencha nome e meta."); return; }
+
+                const btn = document.querySelector('#boxModal button');
+                btn.innerText = "Criando..."; btn.disabled = true;
+
+                try {
+                    const newRef = push(ref(db, 'caixinhas'));
+                    await set(newRef, {
+                        name, target, current: 0, icon
+                    });
+                    document.getElementById('boxModal').classList.add('hidden');
+                    showToast("✅ Caixinha Criada!");
+                    fetchBoxes();
+                } catch(e) { showToast("❌ Erro: " + e.message); }
+                finally { btn.innerText = "CRIAR CAIXINHA"; btn.disabled = false; }
+            },
+
+            openInteractBox: (id, name, current, icon, target) => {
+                state.activeBoxId = id;
+                state.currentBoxData = { name, current, icon, target };
+                document.getElementById('actionBoxName').innerText = name;
+                document.getElementById('actionBoxIcon').innerText = icon;
+                document.getElementById('actionBoxBalance').innerText = formatter.format(current);
+                document.getElementById('boxActionAmount').value = '';
+                document.getElementById('boxActionModal').classList.remove('hidden');
+            },
+
+            updateBoxBalance: async (multiplier) => {
+                const rawVal = document.getElementById('boxActionAmount').value.replace(/\D/g, "");
+                const val = rawVal ? parseFloat(rawVal) / 100 : 0;
+                if(val <= 0) return;
+
+                const newBalance = state.currentBoxData.current + (val * multiplier);
+                if(newBalance < 0) { showToast("⚠️ Saldo insuficiente."); return; }
+
+                try {
+                    await update(ref(db, `caixinhas/${state.activeBoxId}`), {
+                        current: newBalance
+                    });
+                    document.getElementById('boxActionModal').classList.add('hidden');
+                    showToast(multiplier > 0 ? "✅ Depositado!" : "✅ Resgatado!");
+                    fetchBoxes();
+                } catch(e) { showToast("❌ Erro."); }
+            },
+
+            deleteBox: async () => {
+                 if(!confirm("Tem certeza que deseja apagar esta caixinha?")) return;
+                 try {
+                     await remove(ref(db, `caixinhas/${state.activeBoxId}`));
+                     document.getElementById('boxActionModal').classList.add('hidden');
+                     fetchBoxes();
+                 } catch(e) { showToast("Erro ao apagar"); }
             }
         };
+
+        // --- FETCH DE CAIXINHAS ---
+        async function fetchBoxes() {
+            const container = document.getElementById('boxesList');
+            container.innerHTML = '<div class="text-center p-4">Carregando caixinhas...</div>';
+            
+            try {
+                const snap = await get(ref(db, 'caixinhas'));
+                let totalBoxes = 0;
+                container.innerHTML = '';
+
+                if(snap.exists()) {
+                    snap.forEach(child => {
+                        const box = child.val();
+                        totalBoxes += (box.current || 0);
+                        
+                        const percent = Math.min(100, Math.round((box.current / box.target) * 100));
+                        const div = document.createElement('div');
+                        div.className = 'box-card';
+                        div.onclick = () => appLogic.openInteractBox(child.key, box.name, box.current, box.icon, box.target);
+                        
+                        div.innerHTML = `
+                            <div class="box-header">
+                                <div class="box-icon">${box.icon}</div>
+                                <div style="text-align:right;">
+                                    <div class="font-bold text-sm" style="color:var(--box-color)">${percent}%</div>
+                                    <div class="text-xs text-gray">Concluído</div>
+                                </div>
+                            </div>
+                            <div class="font-bold text-xl mb-1">${escapeHtml(box.name)}</div>
+                            <div class="progress-bg">
+                                <div class="progress-fill" style="width:${percent}%"></div>
+                            </div>
+                            <div class="box-values">
+                                <div class="text-xs text-gray">Atual: <b style="color:var(--dark)">${formatter.format(box.current)}</b></div>
+                                <div class="text-xs text-gray">Meta: <b>${formatter.format(box.target)}</b></div>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<div class="text-center text-gray mt-4">Nenhuma caixinha criada.</div>';
+                }
+                
+                // Atualiza o total do header se estiver no modo caixinhas
+                if(state.currentMode === 'boxes') {
+                    document.getElementById('totalGlobal').innerText = formatter.format(totalBoxes);
+                    document.getElementById('totalGlobal').style.color = "#8b5cf6"; // Roxo
+                }
+
+            } catch(e) {
+                console.error(e);
+                showToast("Erro ao carregar caixinhas.");
+            }
+        }
 
         async function fetchData() {
             const startVal = document.getElementById('dateStart').value;
@@ -590,8 +805,11 @@
             const loader = document.getElementById('loadingIndicator');
             const totalDisplay = document.getElementById('totalGlobal');
             
-            totalDisplay.innerText = "R$ ...";
-            totalDisplay.style.color = "white";
+            // Só reseta display se não for modo caixinha
+            if(state.currentMode !== 'boxes') {
+                totalDisplay.innerText = "R$ ...";
+                totalDisplay.style.color = "white";
+            }
             
             if(!startVal || !endVal) return;
 
@@ -616,7 +834,7 @@
                         if(val) items.push({ id: child.key, ...val });
                     });
                 } else {
-                    updateUIEmpty();
+                    if(state.currentMode !== 'boxes') updateUIEmpty();
                     return;
                 }
 
@@ -633,11 +851,11 @@
                     }
                 });
 
-                updateTotals(totalIncCents, totalExpCents, totalCreditCents);
+                if(state.currentMode !== 'boxes') updateTotals(totalIncCents, totalExpCents, totalCreditCents);
 
                 if (state.currentMode === 'detailed') startChunkedRendering(items);
                 else if (state.currentMode === 'cards') renderCardsView(items);
-                else window.appLogic.switchMode('summary');
+                else if (state.currentMode === 'summary') window.appLogic.switchMode('summary');
 
             } catch (err) {
                 console.error(err);
@@ -678,7 +896,6 @@
                 groups[key].total += parseFloat(item.amount);
             });
 
-            // Ordena as chaves (Meses)
             const sortedKeys = Object.keys(groups).sort();
 
             sortedKeys.forEach(key => {
@@ -836,11 +1053,16 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('amount').addEventListener('input', (e) => {
+            // Inputs de Moeda
+            document.getElementById('amount').addEventListener('input', formatCurrencyInput);
+            document.getElementById('boxTarget').addEventListener('input', formatCurrencyInput);
+            document.getElementById('boxActionAmount').addEventListener('input', formatCurrencyInput);
+
+            function formatCurrencyInput(e) {
                 let v = e.target.value.replace(/\D/g,"");
                 if (v === "") return;
                 e.target.value = (parseInt(v)/100).toFixed(2).replace(".",",");
-            });
+            }
 
             document.querySelectorAll('input[name="type"]').forEach(r => {
                 r.addEventListener('change', (e) => {
@@ -981,7 +1203,6 @@
                     });
                     updateTotals(inc, exp, cred);
                     
-                    // Se estiver no modo cartões, re-renderiza
                     if(state.currentMode === 'cards') renderCardsView(state.transactionCache);
                 })
                 .catch(err => showToast("❌ Erro ao apagar."))
