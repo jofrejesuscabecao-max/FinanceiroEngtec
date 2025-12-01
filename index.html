@@ -251,6 +251,14 @@
             text-align: center; background: transparent; border-radius: 0; 
         }
         
+        /* Botão de Fechar Modal (X) */
+        .btn-close-modal {
+            background: #f1f5f9; border: none; width: 40px; height: 40px; 
+            border-radius: 50%; font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gray-text); font-weight: bold;
+        }
+        
         /* Toast & Selection Bar */
         #toast {
             visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
@@ -405,7 +413,7 @@
             <div class="modal-content">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="font-bold text-xl">Novo Lançamento</h2>
-                    <button id="btnCloseModal" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem; cursor:pointer;" aria-label="Fechar">✕</button>
+                    <button id="btnCloseModal" class="btn-close-modal">✕</button>
                 </div>
                 <form id="addForm">
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;" class="mb-4">
@@ -466,24 +474,26 @@
             <div class="modal-content">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="font-bold text-xl">Nova Caixinha</h2>
-                    <button onclick="document.getElementById('boxModal').classList.add('hidden')" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem; cursor:pointer;">✕</button>
+                    <button onclick="document.getElementById('boxModal').classList.add('hidden')" class="btn-close-modal">✕</button>
                 </div>
                 
                 <div class="box-type-selector">
                     <div id="typeGoal" class="box-type-btn type-goal active" onclick="appLogic.selectBoxType('goal')">
                         🎯 Meta/Sonho
+                        <div class="text-xs text-gray opacity-70 mt-1">Juntar aos poucos</div>
                     </div>
                     <div id="typeFund" class="box-type-btn type-fund" onclick="appLogic.selectBoxType('fund')">
                         🛍️ Reserva/Gasto
+                        <div class="text-xs text-gray opacity-70 mt-1">Valor já separado</div>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="text-xs font-bold text-gray block mb-2">NOME DO OBJETIVO</label>
-                    <input type="text" id="boxName" class="input-std" placeholder="Ex: Viagem, IPVA, Casa..." required>
+                    <label class="text-xs font-bold text-gray block mb-2">NOME (Ex: Obra, IPVA...)</label>
+                    <input type="text" id="boxName" class="input-std" placeholder="Nome" required>
                 </div>
                 <div class="mb-4">
-                    <label class="text-xs font-bold text-gray block mb-2">VALOR ALVO (R$)</label>
+                    <label class="text-xs font-bold text-gray block mb-2">VALOR (R$)</label>
                     <input type="tel" id="boxTarget" class="input-std" placeholder="0,00" required inputmode="numeric">
                 </div>
                 <div class="mb-4">
@@ -501,7 +511,7 @@
                         <div id="actionBoxIcon" style="font-size:1.5rem; margin-right:10px;"></div>
                         <h2 id="actionBoxName" class="font-bold text-xl"></h2>
                     </div>
-                    <button onclick="document.getElementById('boxActionModal').classList.add('hidden')" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem; cursor:pointer;">✕</button>
+                    <button onclick="document.getElementById('boxActionModal').classList.add('hidden')" class="btn-close-modal">✕</button>
                 </div>
                 
                 <div class="text-center mb-6">
@@ -509,15 +519,23 @@
                     <span id="actionBoxBalance" class="font-bold text-2xl text-dark"></span>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="text-xs font-bold text-gray block text-center mb-2">VALOR (R$)</label>
-                    <input type="tel" id="boxActionAmount" class="amount-input" placeholder="0,00" inputmode="numeric">
+                <div id="boxTransactionArea">
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-gray block text-center mb-2">VALOR (R$)</label>
+                        <input type="tel" id="boxActionAmount" class="amount-input" placeholder="0,00" inputmode="numeric">
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="appLogic.updateBoxBalance(-1)" style="flex:1; padding:15px; border-radius:12px; border:none; background:#fee2e2; color:var(--danger); font-weight:bold; cursor:pointer;">Resgatar</button>
+                        <button onclick="appLogic.updateBoxBalance(1)" style="flex:1; padding:15px; border-radius:12px; border:none; background:#dcfce7; color:var(--success); font-weight:bold; cursor:pointer;">Depositar</button>
+                    </div>
+                </div>
+                
+                <div id="boxFundMessage" class="hidden text-center text-gray bg-gray-50 p-4 rounded-xl mb-4 border border-dashed border-gray-300">
+                    <p class="text-sm">🔒 Esta é uma <b>Reserva Fixa</b>.</p>
+                    <p class="text-xs mt-1">Este valor está separado para um fim específico.</p>
                 </div>
 
-                <div class="flex gap-2">
-                    <button onclick="appLogic.updateBoxBalance(-1)" style="flex:1; padding:15px; border-radius:12px; border:none; background:#fee2e2; color:var(--danger); font-weight:bold; cursor:pointer;">Resgatar</button>
-                    <button onclick="appLogic.updateBoxBalance(1)" style="flex:1; padding:15px; border-radius:12px; border:none; background:#dcfce7; color:var(--success); font-weight:bold; cursor:pointer;">Depositar</button>
-                </div>
                 <button onclick="appLogic.deleteBox()" class="text-xs text-danger mt-6 w-full text-center bg-transparent border-none cursor-pointer underline">Excluir Caixinha</button>
             </div>
         </div>
@@ -732,10 +750,13 @@
                 const btn = document.querySelector('#boxModal button');
                 btn.innerText = "Criando..."; btn.disabled = true;
 
+                // Lógica de Reserva (Fund): Começa com 100% do valor
+                const initialCurrent = type === 'fund' ? target : 0;
+
                 try {
                     const newRef = push(ref(db, 'caixinhas'));
                     await set(newRef, {
-                        name, target, current: 0, icon, type
+                        name, target, current: initialCurrent, icon, type
                     });
                     document.getElementById('boxModal').classList.add('hidden');
                     showToast("✅ Caixinha Criada!");
@@ -744,13 +765,25 @@
                 finally { btn.innerText = "CRIAR"; btn.disabled = false; }
             },
 
-            openInteractBox: (id, name, current, icon, target) => {
+            openInteractBox: (id, name, current, icon, target, type) => {
                 state.activeBoxId = id;
-                state.currentBoxData = { name, current, icon, target };
+                state.currentBoxData = { name, current, icon, target, type };
+                
                 document.getElementById('actionBoxName').innerText = name;
                 document.getElementById('actionBoxIcon').innerText = icon;
                 document.getElementById('actionBoxBalance').innerText = formatter.format(current);
                 document.getElementById('boxActionAmount').value = '';
+                
+                // Se for Reserva, esconde botões e mostra aviso
+                const isFund = type === 'fund';
+                if(isFund) {
+                    document.getElementById('boxTransactionArea').classList.add('hidden');
+                    document.getElementById('boxFundMessage').classList.remove('hidden');
+                } else {
+                    document.getElementById('boxTransactionArea').classList.remove('hidden');
+                    document.getElementById('boxFundMessage').classList.add('hidden');
+                }
+
                 document.getElementById('boxActionModal').classList.remove('hidden');
             },
 
@@ -797,21 +830,25 @@
                         const box = child.val();
                         totalBoxes += (box.current || 0);
                         
-                        const isGoal = box.type !== 'fund'; // Default to goal if undefined
+                        // Default to 'goal' if undefined (backward compatibility)
+                        const type = box.type || 'goal';
+                        const isGoal = type === 'goal';
+                        
                         const barColor = isGoal ? 'var(--box-goal)' : 'var(--box-fund)';
-                        const labelType = isGoal ? 'Meta' : 'Alvo';
+                        const labelType = isGoal ? 'Meta' : 'Reservado';
                         
                         const percent = Math.min(100, Math.round((box.current / box.target) * 100));
+                        
                         const div = document.createElement('div');
                         div.className = 'box-card';
-                        div.onclick = () => appLogic.openInteractBox(child.key, box.name, box.current, box.icon, box.target);
+                        div.onclick = () => appLogic.openInteractBox(child.key, box.name, box.current, box.icon, box.target, type);
                         
                         div.innerHTML = `
                             <div class="box-header">
                                 <div class="box-icon" style="background:${isGoal ? '#f3e8ff' : '#ecfeff'}">${box.icon}</div>
                                 <div style="text-align:right;">
                                     <div class="font-bold text-sm" style="color:${barColor}">${percent}%</div>
-                                    <div class="text-xs text-gray">${isGoal ? 'Concluído' : 'Juntado'}</div>
+                                    <div class="text-xs text-gray">${isGoal ? 'Concluído' : 'Separado'}</div>
                                 </div>
                             </div>
                             <div class="font-bold text-xl mb-1">${escapeHtml(box.name)}</div>
