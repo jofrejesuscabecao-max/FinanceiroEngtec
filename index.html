@@ -14,7 +14,11 @@
             --danger: #ef4444;
             --warning: #f59e0b; 
             --warning-bg: #fffbeb;
-            --box-color: #8b5cf6; /* Roxo para Caixinhas */
+            
+            /* Cores das Caixinhas */
+            --box-goal: #8b5cf6; /* Roxo (Meta) */
+            --box-fund: #06b6d4; /* Ciano (Reserva/Gasto) */
+            
             --dark: #0f172a;
             --light: #f8fafc;
             --gray-text: #64748b;
@@ -187,12 +191,20 @@
         .box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .box-icon { font-size: 2rem; background: #f3f4f6; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 15px; }
         .progress-bg { background: #e2e8f0; height: 8px; border-radius: 4px; width: 100%; overflow: hidden; margin: 10px 0; }
-        .progress-fill { height: 100%; background: var(--box-color); width: 0%; transition: width 0.5s ease; }
+        .progress-fill { height: 100%; width: 0%; transition: width 0.5s ease; }
         .box-values { display: flex; justify-content: space-between; align-items: flex-end; }
-        .box-btn-add {
-            background: var(--box-color); color: white; border: none; width: 100%; padding: 12px;
-            border-radius: 12px; font-weight: bold; margin-top: 15px; cursor: pointer;
+        
+        /* Tipos de Caixinha */
+        .box-type-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+        .box-type-btn {
+            flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 12px;
+            text-align: center; cursor: pointer; opacity: 0.6; transition: 0.2s;
+            font-size: 0.85rem; font-weight: bold;
         }
+        .box-type-btn.active { opacity: 1; border-width: 2px; transform: scale(1.02); }
+        
+        .type-goal.active { border-color: var(--box-goal); color: var(--box-goal); background: #f3e8ff; }
+        .type-fund.active { border-color: var(--box-fund); color: var(--box-fund); background: #ecfeff; }
 
         /* FAB & Modals */
         .fab { 
@@ -366,7 +378,7 @@
             </div>
 
             <div id="boxesSection" class="hidden">
-                <button onclick="appLogic.openCreateBox()" style="width:100%; padding:15px; border:2px dashed var(--box-color); color:var(--box-color); background:rgba(139, 92, 246, 0.05); border-radius:20px; font-weight:bold; margin-bottom:20px; cursor:pointer;">
+                <button onclick="appLogic.openCreateBox()" style="width:100%; padding:15px; border:2px dashed var(--gray-text); color:var(--dark); background:white; border-radius:20px; font-weight:bold; margin-bottom:20px; cursor:pointer;">
                     + Nova Caixinha
                 </button>
                 <div id="boxesList" class="box-grid"></div>
@@ -453,22 +465,32 @@
         <div id="boxModal" class="modal-overlay hidden">
             <div class="modal-content">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold text-xl" style="color:var(--box-color)">Nova Caixinha</h2>
+                    <h2 class="font-bold text-xl">Nova Caixinha</h2>
                     <button onclick="document.getElementById('boxModal').classList.add('hidden')" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem; cursor:pointer;">✕</button>
                 </div>
+                
+                <div class="box-type-selector">
+                    <div id="typeGoal" class="box-type-btn type-goal active" onclick="appLogic.selectBoxType('goal')">
+                        🎯 Meta/Sonho
+                    </div>
+                    <div id="typeFund" class="box-type-btn type-fund" onclick="appLogic.selectBoxType('fund')">
+                        🛍️ Reserva/Gasto
+                    </div>
+                </div>
+
                 <div class="mb-4">
                     <label class="text-xs font-bold text-gray block mb-2">NOME DO OBJETIVO</label>
-                    <input type="text" id="boxName" class="input-std" placeholder="Ex: Obra do Escritório" required>
+                    <input type="text" id="boxName" class="input-std" placeholder="Ex: Viagem, IPVA, Casa..." required>
                 </div>
                 <div class="mb-4">
-                    <label class="text-xs font-bold text-gray block mb-2">VALOR DA META (R$)</label>
+                    <label class="text-xs font-bold text-gray block mb-2">VALOR ALVO (R$)</label>
                     <input type="tel" id="boxTarget" class="input-std" placeholder="0,00" required inputmode="numeric">
                 </div>
                 <div class="mb-4">
                     <label class="text-xs font-bold text-gray block mb-2">ÍCONE</label>
                     <input type="text" id="boxIcon" class="input-std text-center" value="💰" style="font-size: 2rem;">
                 </div>
-                <button onclick="appLogic.createBox()" class="btn-primary w-full" style="background:var(--box-color)">CRIAR CAIXINHA</button>
+                <button onclick="appLogic.createBox()" class="btn-primary w-full" style="background:var(--dark)">CRIAR</button>
             </div>
         </div>
 
@@ -533,7 +555,8 @@
             chunkTimer: null,
             isLongPeriod: false,
             activeBoxId: null,
-            currentBoxData: null
+            currentBoxData: null,
+            selectedBoxType: 'goal' // 'goal' or 'fund'
         };
 
         const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -680,7 +703,14 @@
             openCreateBox: () => {
                 document.getElementById('boxName').value = '';
                 document.getElementById('boxTarget').value = '';
+                appLogic.selectBoxType('goal'); // Default
                 document.getElementById('boxModal').classList.remove('hidden');
+            },
+
+            selectBoxType: (type) => {
+                state.selectedBoxType = type;
+                document.getElementById('typeGoal').classList.toggle('active', type === 'goal');
+                document.getElementById('typeFund').classList.toggle('active', type === 'fund');
             },
 
             createBox: async () => {
@@ -688,6 +718,7 @@
                 const targetRaw = document.getElementById('boxTarget').value.replace(/\D/g, "");
                 const target = targetRaw ? parseFloat(targetRaw) / 100 : 0;
                 const icon = document.getElementById('boxIcon').value || '💰';
+                const type = state.selectedBoxType || 'goal';
 
                 if(!name || target <= 0) { showToast("⚠️ Preencha nome e meta."); return; }
 
@@ -697,13 +728,13 @@
                 try {
                     const newRef = push(ref(db, 'caixinhas'));
                     await set(newRef, {
-                        name, target, current: 0, icon
+                        name, target, current: 0, icon, type
                     });
                     document.getElementById('boxModal').classList.add('hidden');
                     showToast("✅ Caixinha Criada!");
                     fetchBoxes();
                 } catch(e) { showToast("❌ Erro: " + e.message); }
-                finally { btn.innerText = "CRIAR CAIXINHA"; btn.disabled = false; }
+                finally { btn.innerText = "CRIAR"; btn.disabled = false; }
             },
 
             openInteractBox: (id, name, current, icon, target) => {
@@ -759,6 +790,10 @@
                         const box = child.val();
                         totalBoxes += (box.current || 0);
                         
+                        const isGoal = box.type !== 'fund'; // Default to goal if undefined
+                        const barColor = isGoal ? 'var(--box-goal)' : 'var(--box-fund)';
+                        const labelType = isGoal ? 'Meta' : 'Alvo';
+                        
                         const percent = Math.min(100, Math.round((box.current / box.target) * 100));
                         const div = document.createElement('div');
                         div.className = 'box-card';
@@ -766,19 +801,19 @@
                         
                         div.innerHTML = `
                             <div class="box-header">
-                                <div class="box-icon">${box.icon}</div>
+                                <div class="box-icon" style="background:${isGoal ? '#f3e8ff' : '#ecfeff'}">${box.icon}</div>
                                 <div style="text-align:right;">
-                                    <div class="font-bold text-sm" style="color:var(--box-color)">${percent}%</div>
-                                    <div class="text-xs text-gray">Concluído</div>
+                                    <div class="font-bold text-sm" style="color:${barColor}">${percent}%</div>
+                                    <div class="text-xs text-gray">${isGoal ? 'Concluído' : 'Juntado'}</div>
                                 </div>
                             </div>
                             <div class="font-bold text-xl mb-1">${escapeHtml(box.name)}</div>
                             <div class="progress-bg">
-                                <div class="progress-fill" style="width:${percent}%"></div>
+                                <div class="progress-fill" style="width:${percent}%; background:${barColor}"></div>
                             </div>
                             <div class="box-values">
                                 <div class="text-xs text-gray">Atual: <b style="color:var(--dark)">${formatter.format(box.current)}</b></div>
-                                <div class="text-xs text-gray">Meta: <b>${formatter.format(box.target)}</b></div>
+                                <div class="text-xs text-gray">${labelType}: <b>${formatter.format(box.target)}</b></div>
                             </div>
                         `;
                         container.appendChild(div);
@@ -790,7 +825,7 @@
                 // Atualiza o total do header se estiver no modo caixinhas
                 if(state.currentMode === 'boxes') {
                     document.getElementById('totalGlobal').innerText = formatter.format(totalBoxes);
-                    document.getElementById('totalGlobal').style.color = "#8b5cf6"; // Roxo
+                    document.getElementById('totalGlobal').style.color = "var(--dark)"; 
                 }
 
             } catch(e) {
