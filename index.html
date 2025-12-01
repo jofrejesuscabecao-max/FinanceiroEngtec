@@ -496,10 +496,17 @@
 
         <div id="boxActionModal" class="modal-overlay hidden">
             <div class="modal-content">
-                <div class="text-center mb-4">
-                    <div id="actionBoxIcon" style="font-size:3rem;"></div>
-                    <h2 id="actionBoxName" class="font-bold text-xl mt-2"></h2>
-                    <p class="text-xs text-gray">Saldo Atual: <span id="actionBoxBalance" class="font-bold text-dark"></span></p>
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center">
+                        <div id="actionBoxIcon" style="font-size:1.5rem; margin-right:10px;"></div>
+                        <h2 id="actionBoxName" class="font-bold text-xl"></h2>
+                    </div>
+                    <button onclick="document.getElementById('boxActionModal').classList.add('hidden')" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size: 1.2rem; cursor:pointer;">✕</button>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <p class="text-xs text-gray">Saldo Atual</p>
+                    <span id="actionBoxBalance" class="font-bold text-2xl text-dark"></span>
                 </div>
                 
                 <div class="mb-4">
