@@ -12,7 +12,8 @@
             --primary-dark: #1e40af;
             --success: #10b981;
             --danger: #ef4444;
-            --warning: #f59e0b; /* Cor para Cartão */
+            --warning: #f59e0b; 
+            --warning-bg: #fffbeb;
             --dark: #0f172a;
             --light: #f8fafc;
             --gray-text: #64748b;
@@ -59,7 +60,7 @@
         .mt-4 { margin-top: 16px; }
 
         /* Forms */
-        input, select, textarea { font-size: 16px !important; } /* IOS Zoom fix */
+        input, select, textarea { font-size: 16px !important; } 
         input:focus { border-color: var(--primary) !important; transition: 0.3s; }
         
         .input-std {
@@ -110,6 +111,7 @@
         .mode-switch {
             background: rgba(0,0,0,0.2); border-radius: 20px; padding: 4px; 
             margin: 10px auto; width: fit-content;
+            display: flex; gap: 5px;
         }
         .mode-btn {
             background: transparent; border: none; color: rgba(255,255,255,0.6); 
@@ -122,6 +124,7 @@
         main { max-width: 600px; margin: -20px auto 0 auto; position: relative; z-index: 10; padding: 1rem; }
 
         .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         
         /* Transaction List */
         .transaction-item { 
@@ -129,15 +132,20 @@
             border-radius: 14px; border-left: 4px solid transparent; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer; 
             position: relative;
-            /* Performance Optimization */
             content-visibility: auto; contain-intrinsic-size: 80px;
         }
         .transaction-item:active { background-color: #f1f5f9; }
         .transaction-item.selected { background-color: #eff6ff; border: 1px solid var(--primary); }
         .border-l-success { border-left-color: var(--success); }
         .border-l-danger { border-left-color: var(--danger); }
-        .border-l-warning { border-left-color: var(--warning); } /* Borda para Cartão */
+        .border-l-warning { border-left-color: var(--warning); }
         
+        .credit-tag {
+            display: inline-block; background-color: var(--warning-bg); color: #d97706;
+            font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;
+            border: 1px solid #fcd34d; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
         .select-indicator {
             width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1;
             margin-right: 15px; display: flex; align-items: center; justify-content: center;
@@ -151,6 +159,20 @@
             cursor: pointer; opacity: 0.4; font-size: 1.2rem;
         }
         .btn-delete-hitbox:active { opacity: 1; color: var(--danger); transform: scale(1.1); }
+
+        /* Styles para o Modo Cartão */
+        .month-group { margin-bottom: 25px; }
+        .month-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 5px; border-bottom: 2px solid var(--border); margin-bottom: 10px;
+        }
+        .month-title { font-weight: 900; font-size: 0.9rem; text-transform: uppercase; color: var(--gray-text); }
+        .month-total { font-weight: 900; font-size: 1.1rem; color: var(--warning); }
+        .card-item-mini {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; background: white; margin-bottom: 6px; border-radius: 10px;
+            border: 1px solid #f1f5f9;
+        }
 
         /* FAB & Modals */
         .fab { 
@@ -186,7 +208,6 @@
             background: #eff6ff; border-color: var(--primary); 
             color: var(--primary); font-weight: bold; 
         }
-        /* Estilo específico para seleção de cartão */
         #radioCredit:checked + .cat-option {
             background: #fffbeb; border-color: var(--warning); color: var(--warning);
         }
@@ -225,7 +246,6 @@
         <div style="font-size: 4rem; margin-bottom: 20px;">🛡️</div>
         <h2 style="margin: 0;" class="text-2xl text-center text-white font-bold">Gestor Pro</h2>
         <p class="opacity-70 text-sm mb-4 text-white">Engenharia Financeira</p>
-        
         <div class="flex flex-col items-center w-full gap-2">
             <input type="email" id="emailInput" class="login-input" placeholder="E-mail">
             <input type="password" id="passInput" class="login-input" placeholder="Senha">
@@ -247,9 +267,10 @@
                 <button id="btnLogout" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 10px; border-radius:8px; font-size:0.75rem; cursor:pointer;">Sair</button>
             </div>
 
-            <div class="mode-switch flex gap-2">
+            <div class="mode-switch">
                 <button class="mode-btn" id="btnModeSummary" onclick="appLogic.switchMode('summary')">⚡ Rápido</button>
                 <button class="mode-btn active" id="btnModeDetailed" onclick="appLogic.switchMode('detailed')">📝 Detalhado</button>
+                <button class="mode-btn" id="btnModeCards" onclick="appLogic.switchMode('cards')">💳 Cartões</button>
             </div>
 
             <div class="text-center mt-4">
@@ -275,28 +296,34 @@
                 <button id="btnFetch" class="btn-primary w-full mt-4" style="background: var(--dark);">🔎 Filtrar</button>
             </div>
 
-            <div class="date-grid mb-4">
-                <div class="card text-center" style="margin:0; padding: 1rem;">
-                    <p class="text-xs font-bold text-gray">ENTRADAS</p>
-                    <p id="sumIncome" class="text-xl font-bold text-success">...</p>
-                </div>
-                <div class="card text-center" style="margin:0; padding: 1rem;">
-                    <p class="text-xs font-bold text-gray">SAÍDAS</p>
-                    <p id="sumExpense" class="text-xl font-bold text-danger">...</p>
-                </div>
-            </div>
-
-            <div class="card card-dark">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs opacity-70" style="text-transform: uppercase;">Resultado Líquido</p>
-                        <h3 id="resLiquid" style="font-size:1.8rem; margin:5px 0;">...</h3>
+            <div id="financeDash">
+                <div class="summary-grid mb-4">
+                    <div class="card text-center" style="margin:0; padding: 0.8rem 0.5rem;">
+                        <p class="text-xs font-bold text-gray" style="font-size: 0.65rem;">ENTRADAS</p>
+                        <p id="sumIncome" class="text-sm font-bold text-success">...</p>
                     </div>
-                    <span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:6px; font-size:0.7rem; border: 1px solid rgba(255,255,255,0.2);">DIVISÃO /3</span>
+                    <div class="card text-center" style="margin:0; padding: 0.8rem 0.5rem;">
+                        <p class="text-xs font-bold text-gray" style="font-size: 0.65rem;">SAÍDAS</p>
+                        <p id="sumExpense" class="text-sm font-bold text-danger">...</p>
+                    </div>
+                    <div class="card text-center" style="margin:0; padding: 0.8rem 0.5rem; border-color: var(--warning-bg); background: #ffffff;">
+                        <p class="text-xs font-bold text-warning" style="font-size: 0.65rem;">FATURA (EST.)</p>
+                        <p id="sumCredit" class="text-sm font-bold text-warning">...</p>
+                    </div>
                 </div>
-                <div class="flex justify-between items-center mt-4" style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px;">
-                    <span>🍕 Parte Individual:</span>
-                    <span id="resSplit" style="font-weight:bold; color:#60a5fa; font-size:1.3rem;">...</span>
+
+                <div class="card card-dark">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs opacity-70" style="text-transform: uppercase;">Resultado Líquido</p>
+                            <h3 id="resLiquid" style="font-size:1.8rem; margin:5px 0;">...</h3>
+                        </div>
+                        <span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:6px; font-size:0.7rem; border: 1px solid rgba(255,255,255,0.2);">DIVISÃO /3</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-4" style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px;">
+                        <span>🍕 Parte Individual:</span>
+                        <span id="resSplit" style="font-weight:bold; color:#60a5fa; font-size:1.3rem;">...</span>
+                    </div>
                 </div>
             </div>
 
@@ -309,11 +336,18 @@
                 <div id="scrollLoader" class="text-center p-2 hidden text-sm text-gray">Carregando mais itens...</div>
             </div>
             
+            <div id="cardsSection" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray text-sm">💳 Faturas por Mês</h3>
+                    <button onclick="appLogic.setNext12Months()" style="background:#fffbeb; color:#d97706; border:1px solid #fcd34d; padding:5px 10px; border-radius:10px; font-size:0.7rem; font-weight:bold;">📅 Ver Próximos 12 Meses</button>
+                </div>
+                <div id="cardsList"></div>
+            </div>
+
             <div id="summaryMessage" class="hidden text-center text-gray p-8">
                 <span class="text-2xl">⚡</span><br>
                 <strong>Modo Rápido Ativo</strong><br>
-                <span class="text-sm opacity-70">Exibindo apenas os totais para otimizar desempenho.</span><br>
-                <span class="text-xs text-primary mt-2 block cursor-pointer underline" onclick="appLogic.forceShowList()">Forçar exibição da lista</span>
+                <span class="text-sm opacity-70">Exibindo apenas os totais.</span>
             </div>
         </main>
 
@@ -406,7 +440,6 @@
         import { getDatabase, ref, push, set, remove, get, query, orderByChild, startAt, endAt } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        // Configuração Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAg9hwS3kOcAxBC_IlFgJF97G14ToAJ3Ek",
             authDomain: "financeiroproengtec.firebaseapp.com",
@@ -421,7 +454,6 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // --- Estado Global ---
         const state = {
             currentMode: 'detailed',
             selectedItems: new Set(),
@@ -432,7 +464,8 @@
         };
 
         const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-        
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
         const categories = {
             expense: [
                 { label: 'Gasolina', icon: '⛽' }, { label: 'Almoço', icon: '🍽️' }, { label: 'Material', icon: '🧱' },
@@ -449,12 +482,9 @@
             ]
         };
 
-        // --- Utilitários ---
         const escapeHtml = (unsafe) => {
             if (typeof unsafe !== 'string') return '';
-            return unsafe
-                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         };
 
         const getLocalDateISO = () => {
@@ -470,24 +500,36 @@
             setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
         };
 
-        // --- Lógica da Aplicação ---
         window.appLogic = {
             switchMode: (mode) => {
                 state.currentMode = mode;
                 document.getElementById('btnModeSummary').classList.toggle('active', mode === 'summary');
                 document.getElementById('btnModeDetailed').classList.toggle('active', mode === 'detailed');
+                document.getElementById('btnModeCards').classList.toggle('active', mode === 'cards');
                 
                 const detailSec = document.getElementById('detailedSection');
+                const cardsSec = document.getElementById('cardsSection');
                 const summaryMsg = document.getElementById('summaryMessage');
+                const financeDash = document.getElementById('financeDash');
+
+                // Reset
+                detailSec.classList.add('hidden');
+                cardsSec.classList.add('hidden');
+                summaryMsg.classList.add('hidden');
+                financeDash.classList.remove('hidden'); // Painel financeiro padrão
+                if(state.chunkTimer) cancelAnimationFrame(state.chunkTimer);
 
                 if(mode === 'detailed') {
                     detailSec.classList.remove('hidden');
-                    summaryMsg.classList.add('hidden');
                     startChunkedRendering(state.transactionCache);
-                } else {
-                    detailSec.classList.add('hidden');
+                } 
+                else if (mode === 'cards') {
+                    cardsSec.classList.remove('hidden');
+                    financeDash.classList.add('hidden'); // Esconde o resumo financeiro normal
+                    renderCardsView(state.transactionCache);
+                }
+                else {
                     summaryMsg.classList.remove('hidden');
-                    if(state.chunkTimer) cancelAnimationFrame(state.chunkTimer);
                 }
             },
             
@@ -499,6 +541,17 @@
                 start.setDate(end.getDate() - 30);
                 document.getElementById('dateStart').value = start.toISOString().split('T')[0];
                 document.getElementById('dateEnd').value = end.toISOString().split('T')[0];
+                fetchData();
+            },
+
+            setNext12Months: () => {
+                const start = new Date();
+                const end = new Date();
+                end.setFullYear(start.getFullYear() + 1);
+                
+                document.getElementById('dateStart').value = start.toISOString().split('T')[0];
+                document.getElementById('dateEnd').value = end.toISOString().split('T')[0];
+                showToast("📅 Buscando 1 ano...");
                 fetchData();
             },
 
@@ -554,8 +607,7 @@
                 const qRef = query(ref(db, 'transacoes'), orderByChild('date'), startAt(startVal), endAt(endVal));
                 const snap = await get(qRef);
 
-                let totalIncCents = 0; 
-                let totalExpCents = 0;
+                let totalIncCents = 0, totalExpCents = 0, totalCreditCents = 0;
                 const items = [];
                 
                 if(snap.exists()) {
@@ -571,24 +623,21 @@
                 items.sort((a,b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
                 state.transactionCache = items; 
 
-                // Cálculos - IGNORA CARTÃO (type === 'credit')
                 items.forEach(t => {
-                    if (t.type === 'credit') return; // Pula cartão no cálculo global
-
                     const amtCents = Math.round(parseFloat(t.amount || 0) * 100);
-                    if(t.type === 'income') totalIncCents += amtCents; 
-                    else totalExpCents += amtCents;
+                    if (t.type === 'credit') {
+                        totalCreditCents += amtCents;
+                    } else {
+                        if(t.type === 'income') totalIncCents += amtCents; 
+                        else totalExpCents += amtCents;
+                    }
                 });
 
-                updateTotals(totalIncCents, totalExpCents);
+                updateTotals(totalIncCents, totalExpCents, totalCreditCents);
 
-                if (state.isLongPeriod) {
-                    window.appLogic.switchMode('summary');
-                    showToast(`Período longo (${diffDays} dias). Exibindo resumo.`);
-                } else {
-                    if (state.currentMode === 'detailed') startChunkedRendering(items);
-                    else window.appLogic.switchMode('summary');
-                }
+                if (state.currentMode === 'detailed') startChunkedRendering(items);
+                else if (state.currentMode === 'cards') renderCardsView(items);
+                else window.appLogic.switchMode('summary');
 
             } catch (err) {
                 console.error(err);
@@ -601,9 +650,72 @@
         }
 
         function updateUIEmpty() {
-            updateTotals(0,0);
+            updateTotals(0,0,0);
             document.getElementById('transactionList').innerHTML = `<div class="text-center p-4 text-gray mt-4">📭<br>Nenhum lançamento.</div>`;
+            document.getElementById('cardsList').innerHTML = `<div class="text-center p-4 text-gray mt-4">💳<br>Nenhum cartão neste período.</div>`;
             document.getElementById('loadingIndicator').style.opacity = 0;
+        }
+
+        // Renderização Específica para Modo Cartões
+        function renderCardsView(items) {
+            const container = document.getElementById('cardsList');
+            container.innerHTML = '';
+
+            const creditItems = items.filter(i => i.type === 'credit').sort((a,b) => a.date.localeCompare(b.date)); // Sort data Crescente
+
+            if (creditItems.length === 0) {
+                container.innerHTML = `<div class="text-center p-4 text-gray">Nenhuma fatura encontrada no período selecionado.<br><small>Tente aumentar o filtro de data.</small></div>`;
+                return;
+            }
+
+            const groups = {};
+            
+            creditItems.forEach(item => {
+                const dateParts = item.date.split('-'); // YYYY-MM-DD
+                const key = `${dateParts[0]}-${dateParts[1]}`; // YYYY-MM
+                if (!groups[key]) groups[key] = { total: 0, items: [] };
+                groups[key].items.push(item);
+                groups[key].total += parseFloat(item.amount);
+            });
+
+            // Ordena as chaves (Meses)
+            const sortedKeys = Object.keys(groups).sort();
+
+            sortedKeys.forEach(key => {
+                const [year, month] = key.split('-');
+                const monthName = monthNames[parseInt(month)-1];
+                const group = groups[key];
+
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'month-group';
+                
+                const header = `
+                    <div class="month-header">
+                        <span class="month-title">${monthName} ${year}</span>
+                        <span class="month-total">${formatter.format(group.total)}</span>
+                    </div>
+                `;
+
+                let itemsHtml = '';
+                group.items.forEach(t => {
+                    const day = t.date.split('-')[2];
+                    itemsHtml += `
+                        <div class="card-item-mini" onclick="appLogic.prepareDelete('${t.id}')">
+                            <div class="flex items-center gap-2">
+                                <div>${t.icon}</div>
+                                <div>
+                                    <div class="font-bold text-xs">${escapeHtml(t.category)} <span class="text-gray opacity-70">(${t.installInfo})</span></div>
+                                    <div class="text-xs text-gray">${escapeHtml(t.desc)}</div>
+                                </div>
+                            </div>
+                            <div class="font-bold text-sm text-warning">${t.amount.toFixed(2).replace('.', ',')}</div>
+                        </div>
+                    `;
+                });
+
+                groupDiv.innerHTML = header + itemsHtml;
+                container.appendChild(groupDiv);
+            });
         }
 
         function startChunkedRendering(items) {
@@ -626,7 +738,6 @@
                         const isCredit = t.type === 'credit';
                         
                         const div = document.createElement('div');
-                        // Define cor da borda baseado no tipo
                         let borderClass = 'border-l-danger';
                         if (t.type === 'income') borderClass = 'border-l-success';
                         if (isCredit) borderClass = 'border-l-warning';
@@ -635,18 +746,11 @@
                         div.id = `item-${t.id}`;
                         div.onclick = () => window.appLogic.toggleSelection(t.id);
                         
-                        // Formatação do valor e texto
                         let valColor = t.type==='income'?'var(--success)':'var(--danger)';
                         let displayVal = `${t.type==='income'?'+':'-'} ${(t.amount||0).toFixed(2).replace('.', ',')}`;
-                        
-                        if(isCredit) {
-                            valColor = 'var(--warning)'; // Laranja para cartão
-                            // Se for cartão, tenta mostrar a parcela na descrição extra se existir, ou adapta
-                            displayVal = `${(t.amount||0).toFixed(2).replace('.', ',')}`; 
-                        }
+                        if(isCredit) { valColor = 'var(--warning)'; displayVal = `${(t.amount||0).toFixed(2).replace('.', ',')}`; }
 
-                        // Verifica se tem info de parcela na descrição (hack para visualização limpa)
-                        const extraInfo = isCredit && t.installInfo ? `<span class="text-xs bg-yellow-100 text-warning px-1 rounded ml-1">${t.installInfo}</span>` : '';
+                        const creditBadge = isCredit && t.installInfo ? `<div class="credit-tag">💳 Parcela ${t.installInfo}</div>` : '';
 
                         div.innerHTML = `
                             <div class="select-indicator"></div>
@@ -654,16 +758,15 @@
                                 <div class="flex items-center gap-2">
                                     <div style="font-size:1.4rem;">${t.icon || '📦'}</div>
                                     <div>
-                                        <div class="font-bold text-sm flex items-center">${safeCat} ${extraInfo}</div>
-                                        <div class="text-xs text-gray">${day}/${month} • ${safeDesc}</div>
+                                        <div class="font-bold text-sm">${safeCat}</div>
+                                        ${creditBadge}
+                                        <div class="text-xs text-gray mt-1">${day}/${month} • ${safeDesc}</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="text-center">
-                                <div style="font-weight:bold; color:${valColor}">
-                                    ${displayVal}
-                                </div>
-                                ${isCredit ? '<div class="text-xs text-gray">Vencimento</div>' : ''}
+                                <div style="font-weight:bold; color:${valColor}">${displayVal}</div>
+                                ${isCredit ? '<div class="text-xs text-gray">Fatura</div>' : ''}
                             </div>
                         `;
                         
@@ -685,20 +788,21 @@
             renderChunk(); 
         }
 
-        function updateTotals(incCents, expCents) {
+        function updateTotals(incCents, expCents, credCents) {
             const liquidCents = incCents - expCents;
             const splitCents = Math.round(liquidCents / 3);
             const liquidVal = liquidCents / 100;
             const incVal = incCents / 100;
             const expVal = expCents / 100;
             const splitVal = splitCents / 100;
+            const credVal = credCents / 100;
 
             document.getElementById('totalGlobal').innerText = formatter.format(liquidVal);
             document.getElementById('sumIncome').innerText = formatter.format(incVal);
             document.getElementById('sumExpense').innerText = formatter.format(expVal);
+            document.getElementById('sumCredit').innerText = formatter.format(credVal);
             document.getElementById('resLiquid').innerText = formatter.format(liquidVal);
             document.getElementById('resSplit').innerText = formatter.format(splitVal);
-            
             document.getElementById('totalGlobal').style.color = liquidVal >= 0 ? 'white' : '#fca5a5';
             document.getElementById('resLiquid').style.color = liquidVal >= 0 ? '#4ade80' : '#f87171';
         }
@@ -708,7 +812,6 @@
             state.transactionCache.forEach(t => {
                 if(state.selectedItems.has(t.id)) {
                      const amtCents = Math.round(parseFloat(t.amount) * 100);
-                     // Cartão conta como negativo na soma da seleção para facilitar conferência de faturas
                      const val = (t.type === 'income') ? amtCents : -amtCents;
                      sumCents += val;
                 }
@@ -732,7 +835,6 @@
             `).join('');
         }
 
-        // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('amount').addEventListener('input', (e) => {
                 let v = e.target.value.replace(/\D/g,"");
@@ -740,12 +842,10 @@
                 e.target.value = (parseInt(v)/100).toFixed(2).replace(".",",");
             });
 
-            // Lógica dos Radio Buttons do Modal
             document.querySelectorAll('input[name="type"]').forEach(r => {
                 r.addEventListener('change', (e) => {
                     const type = e.target.value;
                     renderCategories(type);
-                    // Mostra campo de parcelas se for Cartão
                     if(type === 'credit') {
                         document.getElementById('installmentsWrapper').classList.remove('hidden');
                         document.getElementById('dateLabel').innerText = "VENCIMENTO 1ª PARCELA";
@@ -786,7 +886,6 @@
             renderCategories('expense');
         });
 
-        // --- Firebase Actions ---
         function doLogin() {
             const e = document.getElementById('emailInput').value;
             const p = document.getElementById('passInput').value;
@@ -816,23 +915,15 @@
 
             try {
                 if (type === 'credit') {
-                    // Lógica de Parcelamento
                     const installments = parseInt(document.getElementById('installmentsInput').value) || 1;
                     const valPerInst = totalAmount / installments;
-                    const startDate = new Date(dateStr); // Cuidado com timezone, mas para adição simples funciona ok
+                    const startDate = new Date(dateStr); 
 
                     const updates = {};
-                    
                     for (let i = 0; i < installments; i++) {
                         const newRef = push(ref(db, 'transacoes'));
-                        
-                        // Calcula data futura
                         let futureDate = new Date(startDate);
-                        // Ajusta o mês. setMonth lida com virada de ano automaticamente
-                        // Nota: setMonth(startDate.getMonth() + i) funciona se startDate for criado a cada loop ou clonado
-                        // Abordagem segura:
                         futureDate.setMonth(startDate.getMonth() + i);
-                        
                         const dateISO = futureDate.toISOString().split('T')[0];
                         
                         const payload = {
@@ -842,17 +933,13 @@
                             category: escapeHtml(catLabel),
                             desc: escapeHtml(desc),
                             icon: icon,
-                            installInfo: `${i+1}/${installments}` // Salva info da parcela (Ex: 1/10)
+                            installInfo: `${i+1}/${installments}` 
                         };
                         updates[newRef.key] = payload;
                     }
-                    
-                    // Salva todas de uma vez (atomicamente seria melhor com update no root, mas loop de set funciona)
-                    // Como estamos usando push() dentro do loop para gerar keys, podemos usar update no parent
                     await Promise.all(Object.keys(updates).map(k => set(ref(db, `transacoes/${k}`), updates[k])));
 
                 } else {
-                    // Lógica Normal (Receita/Despesa)
                     const newRef = push(ref(db, 'transacoes'));
                     await set(newRef, { 
                         type, amount: totalAmount, date: dateStr, 
@@ -884,14 +971,18 @@
                     const el = document.getElementById(`item-${state.itemToDelete}`);
                     if(el) el.remove();
                     state.transactionCache = state.transactionCache.filter(t => t.id !== state.itemToDelete);
-                    // Recalcula totais locais
-                    let inc=0, exp=0;
+                    
+                    let inc=0, exp=0, cred=0;
                     state.transactionCache.forEach(t => {
-                         if (t.type === 'credit') return; // Ignora cartão no recalculo
                          const amt = Math.round(t.amount*100);
-                         if(t.type==='income') inc+=amt; else exp+=amt;
+                         if (t.type === 'credit') cred+=amt;
+                         else if(t.type==='income') inc+=amt; 
+                         else exp+=amt;
                     });
-                    updateTotals(inc, exp);
+                    updateTotals(inc, exp, cred);
+                    
+                    // Se estiver no modo cartões, re-renderiza
+                    if(state.currentMode === 'cards') renderCardsView(state.transactionCache);
                 })
                 .catch(err => showToast("❌ Erro ao apagar."))
                 .finally(() => {
